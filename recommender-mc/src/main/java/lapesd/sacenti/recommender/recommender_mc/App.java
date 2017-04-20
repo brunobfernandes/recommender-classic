@@ -34,6 +34,18 @@ public class App
     // From tutorial <https://mahout.apache.org/users/recommender/userbased-5-minutes.html>
     public static void showUserRecommender() 
     {
+    	/* DataModel = { USER, ITEM, PREFERENCE }
+    	 * then, u in USER and p in PREFERENCE, u = {p1, p2, p3, p4 ,p5, ...}. 
+    	 * 
+    	 * The PearsonCorrelationSimilary define the similarity between user's vector u' and u'',
+    	 * where sim(u', u'') = cos(u' angle u'').
+    	 * 
+    	 * The ThresholdUserNeighborhood of u' is an user group UN, 
+    	 * where foreach u'' in UN, u'' != u' and sim(u', u'') > threshold.
+    	 * 
+    	 * A GenericUserBasedRecommender recommends to an user u' a list of top items TI,
+    	 * where i in TI, u'' in UN(u') | i in u''.items and TI is ordered.
+    	 * */
     	DataModel model;
     	UserSimilarity similarity;
     	UserNeighborhood neighborhood;
@@ -61,6 +73,16 @@ public class App
     // from tutorial <https://www.youtube.com/watch?v=yD40rVKUwPI>
     public static void showItemRecommender() 
     {
+    	/* DataModel = { USER, ITEM, PREFERENCE }
+    	 * 
+    	 * The LogLikelihoodSimilary define the similarity between items i' and i'',
+    	 * where sim(i', i'') = 1.0 - 1.0 / (1.0 + logLikelihoodRatio) and logLikelihoodRatio = (2.0 * (rowEntropy + columnEntropy - matrixEntropy))
+    	 * 
+    	 * A GenericUserBasedRecommender recommends to an item i' a list of top items TI,
+    	 * where i'' in TI, sim(i', i'') and TI is ordered.
+    	 * i.e.: returns items that have not been rated by the user and that were preferred by another user
+    	 * that has preferred at least one item that the current user has preferred too
+    	 * */
     	DataModel model;
     	ItemSimilarity similarity;
     	GenericItemBasedRecommender recommender;
@@ -89,6 +111,39 @@ public class App
     // From article <https://arxiv.org/ftp/arxiv/papers/1503/1503.06562.pdf>
     public static void showMultiCriteriaRecommender() 
     {
+    	/* DataModel = { USER, ITEM, {PREFERENCEoverall, PREFERENCEcriteria1, PREFERENCEcriteria2, ...} }
+    	 * ! Foreach u' in USER, u' =  { ITEM1.{PREFERENCEoverall, PREFERENCEcriteria1, PREFERENCEcriteria2, ... },
+    	 * 								 ITEM2.{PREFERENCEoverall, PREFERENCEcriteria1, PREFERENCEcriteria2, ... },
+    	 * 								 ... }
+    	 * 
+    	 * EstimatedOverallPreference is a estimated preference of i' for u' ,
+    	 * where eOverallPreference(i', u') = 
+    	 * 
+    	 * MultiCriteriaRecommender has 2 steps: 1. predicting rating for a particular unseen item;
+    	 * 2. recommending to an user u' a list of top items TI,
+    	 * where i' in TI,  TI is ordered by eOverallPreference(i', u').
+    	 * i.e.: returns items that have not been rated by the user, ordered by estimated preference of that user
+    	 * 
+    	 * Obs.: SVD, SSVD, PCA, HOSVD with map reduce.
+    	 * 
+    	 * */
     	System.out.println("Under construction...");
     }
+
+
+	/* WANTED:
+	 * DataModel = { USER, ITEM, !PREFERENCE }
+	 * ! Foreach u' in USER, u' =  { ATRIBUTE(criteria)1.{estimativeVALUE1, estimativeVALUE2, ... },
+	 * 								 ATRIBUTE(criteria)2.{estimativeVALUE1, estimativeVALUE2, ... },
+	 * 								 ... }
+	 * 
+	 * EstimatedPreference is a estimated preference of i' for u' ,
+	 * where ePref(i', u') = 
+	 * 
+	 * MultiCriteriaRecommender recommends to an user u' a list of top items TI,
+	 * where i' in TI, ePref(i', u') and TI is ordered.
+	 * i.e.: returns items that have not been rated by the user, ordered by estimated preference of that user
+	 * */
+    
+    
 }
