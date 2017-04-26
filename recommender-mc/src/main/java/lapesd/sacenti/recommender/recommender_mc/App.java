@@ -28,7 +28,7 @@ public class App
     public static void main( String[] args )
     {
         System.out.println( "Hello World!" );
-        showItemRecommender();
+        showUserRecommender();
     }
     
     // From tutorial <https://mahout.apache.org/users/recommender/userbased-5-minutes.html>
