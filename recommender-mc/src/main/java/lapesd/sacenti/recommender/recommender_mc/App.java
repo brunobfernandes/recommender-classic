@@ -8,6 +8,7 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.eval.RecommenderBuilder;
 import org.apache.mahout.cf.taste.eval.RecommenderEvaluator;
+import org.apache.mahout.cf.taste.impl.common.FullRunningAverageAndStdDev;
 import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
 import org.apache.mahout.cf.taste.impl.eval.AverageAbsoluteDifferenceRecommenderEvaluator;
 import org.apache.mahout.cf.taste.impl.eval.RMSRecommenderEvaluator;
@@ -52,7 +53,7 @@ public class App
 	    	recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
 		}	
 		*/
-    	//Controi o ambiente para testar as recomendações
+    	//Constroi o ambiente para testar as recomendações
     	RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
     		public Recommender buildRecommender(DataModel model)throws TasteException
     		{
@@ -65,11 +66,17 @@ public class App
 
     	try {
     		FileDataModel dataModel = new FileDataModel(new File(inputFile));
-    		//(Detalhes da técnica; Padrão; Conjunto de dados;  %preferências por usuários; %usuários) 
+    		//(Detalhes da técnica; null - default; Conjunto de dados;  %preferências por usuários; %usuários) 
     		
+    		//calculate the value of difference as the square root of the average of the squares of the differences between actual and estimated recommendations.
     		RecommenderEvaluator evaluator = new RMSRecommenderEvaluator();
-    		double userSimEvaluationScore = evaluator.evaluate(userSimRecBuilder,null,dataModel, 1, 0.5);
+    		double userSimEvaluationScore = evaluator.evaluate(userSimRecBuilder,null,dataModel, 0.8, 1.0);
     		System.out.println("Avaliação de Similaridade de Usuários : "+userSimEvaluationScore);
+    		
+    		// The average difference between the actual and estimates preference is calculated.
+    		RecommenderEvaluator evaluator2 = new AverageAbsoluteDifferenceRecommenderEvaluator();
+    		double score2 = evaluator2.evaluate(userSimRecBuilder, null, dataModel, 0.8, 1.0);
+    		System.out.println("Avaliação de dados aleatórios (baseline): " + score2);  		
     		
     		
     		/*
