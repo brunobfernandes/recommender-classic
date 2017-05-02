@@ -46,8 +46,8 @@ public class App
 		Step0(dataset, evaluationPercentage, trainingPercentage);
 		
     	//Etapa 0 - Teste 2 - 50% do dataset e 50% das avaliações
-    	double evaluationPercentage2 = 0.5;//controls how many of the users are used in  evaluation
-    	double trainingPercentage2 = 0.5; //percentage of each user's preferences to use to produce recommendations		
+    	double evaluationPercentage2 = 0.5;
+    	double trainingPercentage2 = 0.5; 
 		Step0(dataset, evaluationPercentage2, trainingPercentage2);
     }
     
@@ -68,15 +68,11 @@ public class App
     		long initialTime = System.currentTimeMillis();
     		FileDataModel dataModel = new FileDataModel(new File(inputFile));
     		
-    		
-    		//trainingPercentage (percentage of each user's preferences to use to produce recommendations)
-    		//evaluationPercentage: (percentage of users to use in evaluation)
     		RecommenderEvaluator evaluator1 = new RMSRecommenderEvaluator();
     		//recommenderBuilder; dataModelBuilder; dataModel; trainingPercentage; evaluationPercentage
     		double evaluetion_rmse = evaluator1.evaluate(userSimRecBuilder,null,dataModel, trainingPercentage, evaluationPercentage);
     		System.out.println("RMSE: "+evaluetion_rmse);
-    		
-    		//
+
     		RecommenderEvaluator evaluator2 = new AverageAbsoluteDifferenceRecommenderEvaluator();
     		double evaluetion_aade = evaluator2.evaluate(userSimRecBuilder, null, dataModel, trainingPercentage, evaluationPercentage);
     		System.out.println("AADE: " + evaluetion_aade);
@@ -99,9 +95,9 @@ public class App
     		 * */
     		// evaluate precision recall, etc. at 10
     		//???????????relevanceThreshold – items whose preference value is at least this value are considered “relevant” for the purposes of computations
-    		RecommenderIRStatsEvaluator evaluator = new GenericRecommenderIRStatsEvaluator();
+    		RecommenderIRStatsEvaluator evaluator3 = new GenericRecommenderIRStatsEvaluator();
     		//recommenderBuilder; dataModelBuilder; dataModel; rescorer; at; relevanceThreshold; evaluationPercentage
-    		IRStatistics medidaAvaliacao = evaluator.evaluate(userSimRecBuilder, null, dataModel, null, 10, 5, evaluationPercentage);
+    		IRStatistics medidaAvaliacao = evaluator3.evaluate(userSimRecBuilder, null, dataModel, null, 10, 5, evaluationPercentage);
     	    System.out.println("Precision: "+ medidaAvaliacao.getPrecision());
     	    System.out.println("Recall: "+ medidaAvaliacao.getRecall());
     	    System.out.println("FallOut: "+ medidaAvaliacao.getFallOut());
