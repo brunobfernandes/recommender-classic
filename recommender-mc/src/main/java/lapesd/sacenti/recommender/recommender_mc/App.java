@@ -40,7 +40,7 @@ public class App
     {
     	String dataset = "data/rating-dataset.csv";
     	
-    	//Etapa 0 - Teste 1 - 90% do dataset e 100% das avaliações
+    	//Etapa 0 - Teste 1 - 1000% do dataset e 90% das avaliações
     	double evaluationPercentage = 1.0;//controls how many of the users are used in  evaluation
     	double trainingPercentage = 0.9; //percentage of each user's preferences to use to produce recommendations		
 		Step0(dataset, evaluationPercentage, trainingPercentage);
