@@ -6,11 +6,15 @@ import java.util.List;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.eval.DataModelBuilder;
+import org.apache.mahout.cf.taste.eval.IRStatistics;
 import org.apache.mahout.cf.taste.eval.RecommenderBuilder;
 import org.apache.mahout.cf.taste.eval.RecommenderEvaluator;
+import org.apache.mahout.cf.taste.eval.RecommenderIRStatsEvaluator;
 import org.apache.mahout.cf.taste.impl.common.FullRunningAverageAndStdDev;
 import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
 import org.apache.mahout.cf.taste.impl.eval.AverageAbsoluteDifferenceRecommenderEvaluator;
+import org.apache.mahout.cf.taste.impl.eval.GenericRecommenderIRStatsEvaluator;
 import org.apache.mahout.cf.taste.impl.eval.RMSRecommenderEvaluator;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
 import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
@@ -30,74 +34,87 @@ import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
 
-public class App 
+public class App
 {
     public static void main( String[] args )
     {
-    	String etapa0_entrada1 = "data/simple-dataset.csv";
-    	RecomendacaoFiltragemColaborativa(etapa0_entrada1);
+    	String dataset = "data/rating-dataset.csv";
+    	
+    	//Etapa 0 - Teste 1 - 90% do dataset e 100% das avaliações
+    	double evaluationPercentage = 1.0;//controls how many of the users are used in  evaluation
+    	double trainingPercentage = 0.9; //percentage of each user's preferences to use to produce recommendations		
+		Step0(dataset, evaluationPercentage, trainingPercentage);
+		
+    	//Etapa 0 - Teste 2 - 50% do dataset e 50% das avaliações
+    	double evaluationPercentage2 = 0.5;//controls how many of the users are used in  evaluation
+    	double trainingPercentage2 = 0.5; //percentage of each user's preferences to use to produce recommendations		
+		Step0(dataset, evaluationPercentage2, trainingPercentage2);
     }
     
-    
-    public static void RecomendacaoFiltragemColaborativa(String inputFile) 
+    public static void Step0(String inputFile, double evaluationPercentage, double trainingPercentage) 
     {
-    	/*DataModel model;
-    	UserSimilarity similarity;
-    	UserNeighborhood neighborhood;
-    	UserBasedRecommender recommender;
-    	
-    	try {
-			model = new FileDataModel(new File(entrada));
-	    	similarity = new PearsonCorrelationSimilarity(model);
-	    	neighborhood = new ThresholdUserNeighborhood(0.1, similarity, model);
-	    	recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
-		}	
-		*/
-    	//Constroi o ambiente para testar as recomendações
     	RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
     		public Recommender buildRecommender(DataModel model)throws TasteException
     		{
     			UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
-    			UserNeighborhood neighborhood = new ThresholdUserNeighborhood(0.1, similarity, model);
+    			UserNeighborhood neighborhood = new ThresholdUserNeighborhood(0.4, similarity, model);
     	   		Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
     			return recommender;
     		}
     	};
 
     	try {
+    		
+    		long initialTime = System.currentTimeMillis();
     		FileDataModel dataModel = new FileDataModel(new File(inputFile));
-    		//(Detalhes da técnica; null - default; Conjunto de dados;  %preferências por usuários; %usuários) 
     		
-    		//calculate the value of difference as the square root of the average of the squares of the differences between actual and estimated recommendations.
-    		RecommenderEvaluator evaluator = new RMSRecommenderEvaluator();
-    		double userSimEvaluationScore = evaluator.evaluate(userSimRecBuilder,null,dataModel, 0.8, 1.0);
-    		System.out.println("Avaliação de Similaridade de Usuários : "+userSimEvaluationScore);
     		
-    		// The average difference between the actual and estimates preference is calculated.
+    		//trainingPercentage (percentage of each user's preferences to use to produce recommendations)
+    		//evaluationPercentage: (percentage of users to use in evaluation)
+    		RecommenderEvaluator evaluator1 = new RMSRecommenderEvaluator();
+    		//recommenderBuilder; dataModelBuilder; dataModel; trainingPercentage; evaluationPercentage
+    		double evaluetion_rmse = evaluator1.evaluate(userSimRecBuilder,null,dataModel, trainingPercentage, evaluationPercentage);
+    		System.out.println("RMSE: "+evaluetion_rmse);
+    		
+    		//
     		RecommenderEvaluator evaluator2 = new AverageAbsoluteDifferenceRecommenderEvaluator();
-    		double score2 = evaluator2.evaluate(userSimRecBuilder, null, dataModel, 0.8, 1.0);
-    		System.out.println("Avaliação de dados aleatórios (baseline): " + score2);  		
+    		double evaluetion_aade = evaluator2.evaluate(userSimRecBuilder, null, dataModel, trainingPercentage, evaluationPercentage);
+    		System.out.println("AADE: " + evaluetion_aade);
     		
     		
-    		/*
-	    	//Imprime usuários similares
-	    	for(LongPrimitiveIterator users=model.getUserIDs(); users.hasNext(); )
-	        {
-	            long userId = users.nextLong();
-	            long[] recommendedUserIDs = recommender.mostSimilarUserIDs(userId, 5); 
-	            
-	            for(long recID:recommendedUserIDs)
-	            {
-	                System.out.println("Usuário "+userId+" similar com Usuário "+recID +" similaridade de : "+similarity.userSimilarity(userId, recID));
-	            }
-
-	        }	    	
-	    	//Especifica o Id do usuário e a qtd de itens a recomendar
-	    	List<RecommendedItem> recommendations = recommender.recommend(2, 5);	    	
-	    	for (RecommendedItem recommendationUser : recommendations) {
-	    	  System.out.println(recommendationUser);
-	    	}*/
-    		
+    		/*For each user, these implementation determine the top n preferences, 
+    		 * then evaluate the IR statistics based on a DataModel that does not have 
+    		 * these values. This number n is the "at" value, as in "precision at 5". 
+    		 * For example, this would mean precision evaluated by removing the 
+    		 * top 5 preferences for a user and then finding the percentage of 
+    		 * those 5 items included in the top 5 recommendations for that user.
+    		 * */
+    		/*GenericRecommenderIRStatsEvaluator.CHOOSE_THRESHOLD = Pass as "relevanceThreshold" 
+    		 * argument to to have it attempt to compute a reasonable threshold. Note that this will impact performance.
+    		 */
+    		/*RESCORER (if any, to use when computing recommendations), 
+    		 * AT (n de recom. consideradas na avaliação das métricas), 
+    		 * RELEVANCETHRESHOLD (items whose preference value is at least this value are considered "relevant" for the purposes of computations) 
+    		 * ASSESSMENTPERCENTAGE (porcentage of evaluation).
+    		 * */
+    		// evaluate precision recall, etc. at 10
+    		//???????????relevanceThreshold – items whose preference value is at least this value are considered “relevant” for the purposes of computations
+    		RecommenderIRStatsEvaluator evaluator = new GenericRecommenderIRStatsEvaluator();
+    		//recommenderBuilder; dataModelBuilder; dataModel; rescorer; at; relevanceThreshold; evaluationPercentage
+    		IRStatistics medidaAvaliacao = evaluator.evaluate(userSimRecBuilder, null, dataModel, null, 10, 5, evaluationPercentage);
+    	    System.out.println("Precision: "+ medidaAvaliacao.getPrecision());
+    	    System.out.println("Recall: "+ medidaAvaliacao.getRecall());
+    	    System.out.println("FallOut: "+ medidaAvaliacao.getFallOut());
+    	    System.out.println("F1Measure: "+ medidaAvaliacao.getF1Measure());
+    	    System.out.println("FNMeasure: "+ medidaAvaliacao.getFNMeasure(2.0));
+    	    System.out.println("NDCG: "+ medidaAvaliacao.getNormalizedDiscountedCumulativeGain());
+    	    System.out.println("Reach: "+ medidaAvaliacao.getReach());
+  	    
+    	    
+    	    long finalTime = System.currentTimeMillis();
+    	    long processingTime = (finalTime - initialTime)/1000;
+    		System.out.println("Tempo de Duração: "+processingTime +" segundos ou "+ processingTime/60+" minutos\n\n");
+	    		    		
     	} catch (IOException e) {
     		System.out.println("There was an IO exception.");
 			e.printStackTrace();
