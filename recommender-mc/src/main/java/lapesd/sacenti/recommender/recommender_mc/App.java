@@ -39,33 +39,26 @@ import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
 public class App
 {
+	public static FileDataModel dataModelUserGenre;
+	
     public static void main( String[] args )
     {
-		String datasetRating = "data/Testes/ratingModel.csv";
-    	String datasetUserGenre = "data/Testes/userGenreModel.csv";
-
-    	/*//Etapa 0 - Teste 1 - 100% do dataset e 90% das avaliações
-    	double evaluationPercentage = 1.0;//controls how many of the users are used in  evaluation
-    	double trainingPercentage = 0.9; //percentage of each user's preferences to use to produce recommendations		
-		Step0(datasetRating, evaluationPercentage, trainingPercentage);*/
-		
-    	//Etapa 0 - Teste 2 - 50% do dataset e 50% das avaliações
-    	//double evaluationPercentage2 = 0.5;
-    	//double trainingPercentage2 = 0.5; 
-		//Step0(datasetRating, evaluationPercentage2, trainingPercentage2);
+		String datasetUserItenRating = "data/rating100Users.csv";    	
+		double evaluationPercentage = 0.1;//controls how many of the users are used in  evaluation
+    	double trainingPercentage = 0.3; //percentage of each user's preferences to use to produce recommendations		
     	
-		String datasetRating100Users = "data/rating100Users.csv", datasetUserGenre100users = "data/userGenre100UsersNormalized.csv";
-    	//Etapa 1 - Teste 1 - 100% do dataset e 90% das avaliações
-    	//double evaluationPercentage3 = 1.0, trainingPercentage3 = 0.9; 
-		//Step1(datasetRating100Users, datasetUserGenre100users, evaluationPercentage3, trainingPercentage3);
-		
-    	//Filtragem Colaborativa Tradicional
-    	FCTraditional(datasetRating);
     	
-    	System.out.println("\n");
+		//Filtragem Colaborativa Tradicional
+    	//FCTraditional(datasetUserItenRating);
+    	
     	//Filtragem Colaborativa Com Entrada de Gêneros Implicito
-		FCTraditionalValueImplicit(datasetRating, datasetUserGenre);
-    	    	
+		//FCGenreValueImplicit(datasetUserItenRating);
+		
+		//Etapa 0 - FC Tradicional
+    	//Step0(datasetUserItenRating, evaluationPercentage, trainingPercentage);
+    			
+    	//Etapa 1 - FC Valores Implícitos
+		//Step1(datasetUserItenRating, evaluationPercentage, trainingPercentage);    	    	
     }
     
     public static void FCTraditional(String inputFileRating){
@@ -77,10 +70,10 @@ public class App
         	 FileDataModel model = new FileDataModel(new File(inputFileRating));
         	 
              similarity = new PearsonCorrelationSimilarity(model);
-             neighborhood = new ThresholdUserNeighborhood(0.0, similarity, model);
+             neighborhood = new ThresholdUserNeighborhood(-1.0, similarity, model);
              recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
              
-	         //Imprime usuários similares
+             //Imprime usuários similares
 	         for(LongPrimitiveIterator users=model.getUserIDs(); users.hasNext(); )
 	         {
 	             long userId = users.nextLong();
@@ -92,8 +85,6 @@ public class App
 	             }
 	  
 	         }
-	         
-	         
 	         long[] theNeighborhood;
 	         //Especifica o Id do usuário e a qtd de itens a recomendar
 	         for(int idUser=1; idUser<5; idUser++){
@@ -110,6 +101,7 @@ public class App
 		         }
 		         System.out.println("");
 	         }
+	         System.out.print("\n");
          } catch (IOException e) {
      		System.out.println("There was an IO exception.");
  			e.printStackTrace();
@@ -119,30 +111,28 @@ public class App
      	}
 	    	
     }
-    public static void FCTraditionalValueImplicit(String inputFileRating, String inputFileUserGenre){
-   	 UserSimilarity similarity;
+    public static void FCGenreValueImplicit(String inputFileRating){
+   	 	UserSimilarity similarity;
         UserNeighborhood neighborhood;
         UserBasedRecommender recommender;
          
         try {
-        	
-        	FileDataModel modelUserGenre = new FileDataModel(new File(inputFileUserGenre));
-        	similarity = new PearsonCorrelationSimilarity(modelUserGenre);
-            neighborhood = new ThresholdUserNeighborhood(0.0, similarity, modelUserGenre);
+        	dataModelUserGenre = new FileDataModel(new File("data/userGenre100UsersNormalized.csv"));
+        	similarity = new PearsonCorrelationSimilarity(dataModelUserGenre);
+            neighborhood = new ThresholdUserNeighborhood(0.0, similarity, dataModelUserGenre);
 
-            FileDataModel modelRating = new FileDataModel(new File(inputFileRating));
-            recommender = new GenericUserBasedRecommender(modelRating, neighborhood, similarity);
+            FileDataModel dataModelUserItenRating = new FileDataModel(new File(inputFileRating));
+            recommender = new GenericUserBasedRecommender(dataModelUserItenRating, neighborhood, similarity);
             
             //Imprime usuários similares
-             
-            for(LongPrimitiveIterator users=modelRating.getUserIDs(); users.hasNext(); )
+            for(LongPrimitiveIterator users=dataModelUserItenRating.getUserIDs(); users.hasNext(); )
 	         {
 	             long userId = users.nextLong();
 	             long[] recommendedUserIDs = recommender.mostSimilarUserIDs(userId, 5); 
 	              
-	             for(long recID:recommendedUserIDs)
+	             for(long recId:recommendedUserIDs)
 	             {
-	                 System.out.println("Usuário "+userId+" similar com Usuário "+recID +" similaridade de : "+similarity.userSimilarity(userId, recID));
+	                 System.out.println("Usuário "+userId+" similar com Usuário "+recId +" similaridade de : "+similarity.userSimilarity(userId, recId));
 	             }
 	  
 	         }
@@ -161,6 +151,7 @@ public class App
 		         }
 		         System.out.println("");
 	         }
+	         System.out.print("\n");
         } catch (IOException e) {
     		System.out.println("There was an IO exception.");
 			e.printStackTrace();
@@ -174,28 +165,35 @@ public class App
     
     public static void Step0(String inputFile, double evaluationPercentage, double trainingPercentage) 
     {
-    	RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
-    		public Recommender buildRecommender(DataModel model)throws TasteException
-    		{
-    			UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
-    			UserNeighborhood neighborhood = new ThresholdUserNeighborhood(0.4, similarity, model);
-    	   		Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
-    			return recommender;
-    		}
-    	};
-
     	try {
-    		
+    		System.out.println("Etapa 0: FC Traditional: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
     		long initialTime = System.currentTimeMillis();
-    		FileDataModel dataModel = new FileDataModel(new File(inputFile));
+    		
+    		RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
+	    		public Recommender buildRecommender(DataModel model)throws TasteException
+	    		{
+	    			long initialTimeGrouping = System.currentTimeMillis();
+	    			
+	    			UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
+	    			UserNeighborhood neighborhood = new ThresholdUserNeighborhood(0.4, similarity, model);
+	    			
+	    			long finalTimeGrouping = System.currentTimeMillis();
+		    	    long processingTimeGrouping = (finalTimeGrouping - initialTimeGrouping);
+		    		System.out.println("Tempo de Duração: "+processingTimeGrouping +" milisegundos ou "+ processingTimeGrouping/1000+" segundos");
+	    			
+	    			Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
+	    			return recommender;
+	    		}
+	    	};    		
+    		FileDataModel dataModelUserItenRating = new FileDataModel(new File(inputFile));
     		
     		RecommenderEvaluator evaluator1 = new RMSRecommenderEvaluator();
     		//recommenderBuilder; dataModelBuilder; dataModel; trainingPercentage; evaluationPercentage
-    		double evaluetion_rmse = evaluator1.evaluate(userSimRecBuilder,null,dataModel, trainingPercentage, evaluationPercentage);
+    		double evaluetion_rmse = evaluator1.evaluate(userSimRecBuilder,null,dataModelUserItenRating, trainingPercentage, evaluationPercentage);
     		System.out.println("RMSE: "+evaluetion_rmse);
 
     		RecommenderEvaluator evaluator2 = new AverageAbsoluteDifferenceRecommenderEvaluator();
-    		double evaluetion_aade = evaluator2.evaluate(userSimRecBuilder, null, dataModel, trainingPercentage, evaluationPercentage);
+    		double evaluetion_aade = evaluator2.evaluate(userSimRecBuilder, null, dataModelUserItenRating, trainingPercentage, evaluationPercentage);
     		System.out.println("AADE: " + evaluetion_aade);
     		
     		
@@ -216,21 +214,21 @@ public class App
     		 * */
     		// evaluate precision recall, etc. at 10
     		//???????????relevanceThreshold – items whose preference value is at least this value are considered “relevant” for the purposes of computations
-    		RecommenderIRStatsEvaluator evaluator3 = new GenericRecommenderIRStatsEvaluator();
+    		/*RecommenderIRStatsEvaluator evaluator3 = new GenericRecommenderIRStatsEvaluator();
     		//recommenderBuilder; dataModelBuilder; dataModel; rescorer; at; relevanceThreshold; evaluationPercentage
-    		IRStatistics medidaAvaliacao = evaluator3.evaluate(userSimRecBuilder, null, dataModel, null, 10, 5, evaluationPercentage);
+    		IRStatistics medidaAvaliacao = evaluator3.evaluate(userSimRecBuilder, null, dataModelUserItenRating, null, 10, 5, evaluationPercentage);
     	    System.out.println("Precision: "+ medidaAvaliacao.getPrecision());
     	    System.out.println("Recall: "+ medidaAvaliacao.getRecall());
     	    System.out.println("FallOut: "+ medidaAvaliacao.getFallOut());
     	    System.out.println("F1Measure: "+ medidaAvaliacao.getF1Measure());
     	    System.out.println("FNMeasure: "+ medidaAvaliacao.getFNMeasure(2.0));
     	    System.out.println("NDCG: "+ medidaAvaliacao.getNormalizedDiscountedCumulativeGain());
-    	    System.out.println("Reach: "+ medidaAvaliacao.getReach());
+    	    System.out.println("Reach: "+ medidaAvaliacao.getReach());*/
   	    
     	    
     	    long finalTime = System.currentTimeMillis();
-    	    long processingTime = (finalTime - initialTime)/1000;
-    		System.out.println("Tempo de Duração: "+processingTime +" segundos ou "+ processingTime/60+" minutos\n\n");
+    	    long processingTime = (finalTime - initialTime);
+    		System.out.println("Tempo de Duração Total: "+processingTime +" milisegundos ou "+ processingTime/1000+" segundos\n\n");
 	    		    		
     	} catch (IOException e) {
     		System.out.println("There was an IO exception.");
@@ -240,52 +238,59 @@ public class App
 			e.printStackTrace();
     	}
     }   
-    public static void Step1(String inputFileUserItenRating, String inputFileUserGenre, double evaluationPercentage, double trainingPercentage) 
+    public static void Step1(String inputFileUserItenRating, double evaluationPercentage, double trainingPercentage) 
     {
-    	
-    	RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
-    		public Recommender buildRecommender(DataModel model)throws TasteException
-    		{	
-    			//Calcula a Similaridade Utilizando a Correlação de Pearson
-				UserSimilarity similarity = new PearsonCorrelationSimilarity(model);//UserGenre
-				//Agrupa os Vizinhos Próximos
-    			UserNeighborhood neighborhood = new ThresholdUserNeighborhood(0.1, similarity, model);//UserGenre
-    			    			
-    			String inputFileUserItenRating = "data/rating100Users.csv";
-				FileDataModel dataModelRating = new FileDataModel(new File(inputFileUserItenRating));
-				//Gera as Recomendações Baseado no Modelo de Avaliações, Vizinhança e Similaridade
-    			Recommender recommender = new GenericUserBasedRecommender(dataModelRating, neighborhood, similarity);//UserRating
-    			return recommender;
-    		}
-    	};    	
-    	
-    	/*DataModelBuilder modelBuilder = new DataModelBuilder() {
-	        public DataModel buildDataModel( FastByIDMap<PreferenceArray> trainingData ) {
-	            return new GenericBooleanPrefDataModel( GenericBooleanPrefDataModel.toDataMap(trainingData) );
-	        }        
-	    };*/
-	    
     	try {
-    		
+    		System.out.println("Etapa 1: FC Implicit Input of the Genres: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
     		long initialTime = System.currentTimeMillis();
+    	
+	    	RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
+	    		public Recommender buildRecommender(DataModel model)throws TasteException
+	    		{	
+	    			long initialTimeGrouping = System.currentTimeMillis();
+	    			
+	    			try {
+						dataModelUserGenre = new FileDataModel(new File("data/userGenre100UsersNormalized.csv"));
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	    			UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModelUserGenre);
+    				UserNeighborhood neighborhood = new ThresholdUserNeighborhood(0.4, similarity, dataModelUserGenre);    			    		
+    				
+    				long finalTimeGrouping = System.currentTimeMillis();
+    	    	    long processingTimeGrouping = (finalTimeGrouping - initialTimeGrouping);
+    	    		System.out.println("Tempo de Duração: "+processingTimeGrouping +" milisegundos ou "+ processingTimeGrouping/1000+" segundos");
+    				
+	    			Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
+	    			return recommender;
+	    		}
+	    	}; 
     		FileDataModel dataModelUserItenRating = new FileDataModel(new File(inputFileUserItenRating));
-			FileDataModel dataModelUserGenre = new FileDataModel(new File(inputFileUserGenre));
 			
     		RecommenderEvaluator evaluator1 = new RMSRecommenderEvaluator();
-    		double evaluetion_rmse = evaluator1.evaluate(userSimRecBuilder,null,dataModelUserGenre, trainingPercentage, evaluationPercentage);
+    		double evaluetion_rmse = evaluator1.evaluate(userSimRecBuilder,null,dataModelUserItenRating, trainingPercentage, evaluationPercentage);
     		System.out.println("RMSE: "+evaluetion_rmse);
     		
-    		RecommenderEvaluator evaluator12 = new RMSRecommenderEvaluator();
-    		double evaluetion_rmse2 = evaluator12.evaluate(userSimRecBuilder,null,dataModelUserGenre, trainingPercentage, evaluationPercentage);
-    		System.out.println("RMSE: "+evaluetion_rmse2);
+    		RecommenderEvaluator evaluator2 = new AverageAbsoluteDifferenceRecommenderEvaluator();
+    		double evaluetion_aade = evaluator2.evaluate(userSimRecBuilder, null, dataModelUserItenRating, trainingPercentage, evaluationPercentage);
+    		System.out.println("AADE: " + evaluetion_aade);
     		
-    		/*RecommenderEvaluator evaluator2 = new AverageAbsoluteDifferenceRecommenderEvaluator();
-    		double evaluetion_aade = evaluator2.evaluate(userSimRecBuilder, null, dataModelUserGenre, trainingPercentage, evaluationPercentage);
-    		System.out.println("AADE: " + evaluetion_aade);*/
+    		
+    		/*RecommenderIRStatsEvaluator evaluator3 = new GenericRecommenderIRStatsEvaluator();
+    		//recommenderBuilder; dataModelBuilder; dataModel; rescorer; at; relevanceThreshold; evaluationPercentage
+    		IRStatistics medidaAvaliacao = evaluator3.evaluate(userSimRecBuilder, null, dataModelUserItenRating, null, 10, 5, evaluationPercentage);
+    	    System.out.println("Precision: "+ medidaAvaliacao.getPrecision());
+    	    System.out.println("Recall: "+ medidaAvaliacao.getRecall());
+    	    System.out.println("FallOut: "+ medidaAvaliacao.getFallOut());
+    	    System.out.println("F1Measure: "+ medidaAvaliacao.getF1Measure());
+    	    System.out.println("FNMeasure: "+ medidaAvaliacao.getFNMeasure(2.0));
+    	    System.out.println("NDCG: "+ medidaAvaliacao.getNormalizedDiscountedCumulativeGain());
+    	    System.out.println("Reach: "+ medidaAvaliacao.getReach());*/
     		
     		long finalTime = System.currentTimeMillis();
-    	    long processingTime = (finalTime - initialTime)/1000;
-    		System.out.println("Tempo de Duração: "+processingTime +" segundos ou "+ processingTime/60+" minutos\n\n");
+    	    long processingTime = (finalTime - initialTime);
+    		System.out.println("Tempo de Duração Total: "+processingTime +" milisegundos ou "+ processingTime/1000+" segundos\n\n");
 	    		    		
     	} catch (IOException e) {
     		System.out.println("There was an IO exception.");
