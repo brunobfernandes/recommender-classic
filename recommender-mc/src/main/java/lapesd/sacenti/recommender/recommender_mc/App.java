@@ -40,9 +40,9 @@ public class App
 	
     public static void main( String[] args )
     {
-		String datasetUserItenRating = "data/rating100Users.csv";    	
+		String datasetUserItenRating = "data/rating604Users.csv";    	
 		double evaluationPercentage = 1.0;//controls how many of the users are used in  evaluation
-    	double trainingPercentage = 0.8; //percentage of each user's preferences to use to produce recommendations		
+    	double trainingPercentage = 0.25; //percentage of each user's preferences to use to produce recommendations		
     	
     	//Algoritmos de Filtragem Colaborativa Clássicos
 		//FCClassic.PearsonCorrelation(datasetUserItenRating);

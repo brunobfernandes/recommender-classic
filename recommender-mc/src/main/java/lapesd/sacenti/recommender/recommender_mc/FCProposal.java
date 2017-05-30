@@ -27,7 +27,8 @@ import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 public class FCProposal {
 	public static double threshold = 0.6;
 	public static FileDataModel dataModelUserGenre;
-	public static String fileDataModelUserGenre = "data/userGenre100UsersNormalized.csv";
+	public static String fileDataModelUserGenre = "data/userGenre604UsersNormalized.csv";
+	public static long processingTimeGroupingTotal;
 	
 	//FCGenreValueImplicit
 	public static void PearsonCorrelation(String datasetUserItenRating){
@@ -346,23 +347,22 @@ public class FCProposal {
     	try {
     		System.out.println("Step 1: FC Implicit Input of the Genres - Pearson Correlation: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
     		long initialTime = System.currentTimeMillis();
-    	
+    		processingTimeGroupingTotal = 0;
+    		
+    		dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
+    		
 	    	RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
 	    		public Recommender buildRecommender(DataModel model)throws TasteException
 	    		{	
 	    			long initialTimeGrouping = System.currentTimeMillis();
 	    			
-	    			try {
-	    				dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-	    			UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModelUserGenre);
+	    			//dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
+					UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModelUserGenre);
     				UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, dataModelUserGenre);    			    		
     				
     				long finalTimeGrouping = System.currentTimeMillis();
     	    	    long processingTimeGrouping = (finalTimeGrouping - initialTimeGrouping);
+    	    	    processingTimeGroupingTotal = processingTimeGroupingTotal +  processingTimeGrouping;
     	    		System.out.println("Grouping Duration: "+processingTimeGrouping +" milliseconds ou "+ processingTimeGrouping/1000+" seconds");
     				
 	    			Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
@@ -393,6 +393,7 @@ public class FCProposal {
     		
     		long finalTime = System.currentTimeMillis();
     	    long processingTime = (finalTime - initialTime);
+    	    System.out.println("Total Grouping Duration: "+processingTimeGroupingTotal +" milliseconds or "+ processingTimeGroupingTotal/1000+" seconds");
     		System.out.println("Total Duration Time: "+processingTime +" milliseconds or "+ processingTime/1000+" seconds\n");		
 	    		    		
     	} catch (IOException e) {
@@ -408,23 +409,21 @@ public class FCProposal {
     	try {
     		System.out.println("Step 1: FC Implicit Input of the Genres - Spearman Correlation: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
     		long initialTime = System.currentTimeMillis();
+    		processingTimeGroupingTotal = 0;
     	
+    		dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
+    		
 	    	RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
 	    		public Recommender buildRecommender(DataModel model)throws TasteException
 	    		{	
 	    			long initialTimeGrouping = System.currentTimeMillis();
 	    			
-	    			try {
-	    				dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
 	    			UserSimilarity similarity = new SpearmanCorrelationSimilarity(dataModelUserGenre);
     				UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, dataModelUserGenre);    			    		
     				
     				long finalTimeGrouping = System.currentTimeMillis();
     	    	    long processingTimeGrouping = (finalTimeGrouping - initialTimeGrouping);
+    	    	    processingTimeGroupingTotal = processingTimeGroupingTotal +  processingTimeGrouping;
     	    		System.out.println("Grouping Duration: "+processingTimeGrouping +" milliseconds ou "+ processingTimeGrouping/1000+" seconds");
     				
 	    			Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
@@ -455,6 +454,7 @@ public class FCProposal {
     		
     		long finalTime = System.currentTimeMillis();
     	    long processingTime = (finalTime - initialTime);
+    	    System.out.println("Total Grouping Duration: "+processingTimeGroupingTotal +" milliseconds or "+ processingTimeGroupingTotal/1000+" seconds");
     		System.out.println("Total Duration Time: "+processingTime +" milliseconds or "+ processingTime/1000+" seconds\n");		
 	    		    		
     	} catch (IOException e) {
@@ -470,23 +470,21 @@ public class FCProposal {
     	try {
     		System.out.println("Step 1: FC Implicit Input of the Genres - Euclidean Distance: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
     		long initialTime = System.currentTimeMillis();
+    		processingTimeGroupingTotal = 0;
     	
+    		dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
+    		
 	    	RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
 	    		public Recommender buildRecommender(DataModel model)throws TasteException
 	    		{	
 	    			long initialTimeGrouping = System.currentTimeMillis();
 	    			
-	    			try {
-	    				dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
 	    			UserSimilarity similarity = new EuclideanDistanceSimilarity(dataModelUserGenre);
     				UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, dataModelUserGenre);    			    		
     				
     				long finalTimeGrouping = System.currentTimeMillis();
     	    	    long processingTimeGrouping = (finalTimeGrouping - initialTimeGrouping);
+    	    	    processingTimeGroupingTotal = processingTimeGroupingTotal +  processingTimeGrouping;
     	    		System.out.println("Grouping Duration: "+processingTimeGrouping +" milliseconds ou "+ processingTimeGrouping/1000+" seconds");
     				
 	    			Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
@@ -517,6 +515,7 @@ public class FCProposal {
     		
     		long finalTime = System.currentTimeMillis();
     	    long processingTime = (finalTime - initialTime);
+    	    System.out.println("Total Grouping Duration: "+processingTimeGroupingTotal +" milliseconds or "+ processingTimeGroupingTotal/1000+" seconds");
     		System.out.println("Total Duration Time: "+processingTime +" milliseconds or "+ processingTime/1000+" seconds\n");		
 	    		    		
     	} catch (IOException e) {
@@ -532,23 +531,21 @@ public class FCProposal {
     	try {
     		System.out.println("Step 1: FC Implicit Input of the Genres - Tanimoto Coefficient: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
     		long initialTime = System.currentTimeMillis();
+    		processingTimeGroupingTotal = 0;
     	
+    		dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
+    		
 	    	RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
 	    		public Recommender buildRecommender(DataModel model)throws TasteException
 	    		{	
 	    			long initialTimeGrouping = System.currentTimeMillis();
 	    			
-	    			try {
-	    				dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
 	    			UserSimilarity similarity = new TanimotoCoefficientSimilarity(dataModelUserGenre);
     				UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, dataModelUserGenre);    			    		
     				
     				long finalTimeGrouping = System.currentTimeMillis();
     	    	    long processingTimeGrouping = (finalTimeGrouping - initialTimeGrouping);
+    	    	    processingTimeGroupingTotal = processingTimeGroupingTotal +  processingTimeGrouping;
     	    		System.out.println("Grouping Duration: "+processingTimeGrouping +" milliseconds ou "+ processingTimeGrouping/1000+" seconds");
     				
 	    			Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
@@ -579,6 +576,7 @@ public class FCProposal {
     		
     		long finalTime = System.currentTimeMillis();
     	    long processingTime = (finalTime - initialTime);
+    	    System.out.println("Total Grouping Duration: "+processingTimeGroupingTotal +" milliseconds or "+ processingTimeGroupingTotal/1000+" seconds");
     		System.out.println("Total Duration Time: "+processingTime +" milliseconds or "+ processingTime/1000+" seconds\n");		
 	    		    		
     	} catch (IOException e) {
@@ -594,23 +592,21 @@ public class FCProposal {
     	try {
     		System.out.println("Step 1: FC Implicit Input of the Genres - Log Likelihood: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
     		long initialTime = System.currentTimeMillis();
+    		processingTimeGroupingTotal = 0;
     	
+    		dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
+    		
 	    	RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
 	    		public Recommender buildRecommender(DataModel model)throws TasteException
 	    		{	
 	    			long initialTimeGrouping = System.currentTimeMillis();
 	    			
-	    			try {
-	    				dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
 	    			UserSimilarity similarity = new LogLikelihoodSimilarity(dataModelUserGenre);
     				UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, dataModelUserGenre);    			    		
     				
     				long finalTimeGrouping = System.currentTimeMillis();
     	    	    long processingTimeGrouping = (finalTimeGrouping - initialTimeGrouping);
+    	    	    processingTimeGroupingTotal = processingTimeGroupingTotal +  processingTimeGrouping;
     	    		System.out.println("Grouping Duration: "+processingTimeGrouping +" milliseconds ou "+ processingTimeGrouping/1000+" seconds");
     				
 	    			Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
@@ -641,6 +637,7 @@ public class FCProposal {
     		
     		long finalTime = System.currentTimeMillis();
     	    long processingTime = (finalTime - initialTime);
+    	    System.out.println("Total Grouping Duration: "+processingTimeGroupingTotal +" milliseconds or "+ processingTimeGroupingTotal/1000+" seconds");
     		System.out.println("Total Duration Time: "+processingTime +" milliseconds or "+ processingTime/1000+" seconds\n");		
 	    		    		
     	} catch (IOException e) {

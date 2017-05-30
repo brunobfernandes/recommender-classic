@@ -26,6 +26,7 @@ import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
 public class FCClassic {
 	public static double threshold = 0.6;
+	public static long processingTimeGroupingTotal;
 	
 	public static void PearsonCorrelation(String datasetUserItenRating) {
 		System.out.println("Spearman Correlation");
@@ -368,6 +369,7 @@ public class FCClassic {
     	try {
     		System.out.println("Step 0: FC Classic - Pearson Correlation: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
     		long initialTime = System.currentTimeMillis();
+    		processingTimeGroupingTotal = 0;
     		
     		RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
 	    		public Recommender buildRecommender(DataModel model)throws TasteException
@@ -379,9 +381,10 @@ public class FCClassic {
 	    			
 	    			long finalTimeGrouping = System.currentTimeMillis();
 		    	    long processingTimeGrouping = (finalTimeGrouping - initialTimeGrouping);
+	    			processingTimeGroupingTotal = processingTimeGroupingTotal +  processingTimeGrouping;
 		    		System.out.println("Grouping Duration: "+processingTimeGrouping +" milliseconds or "+ processingTimeGrouping/1000+" seconds");
 	    			
-	    			Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
+		    		Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
 	    			return recommender;
 	    		}
 	    	};    		
@@ -428,7 +431,8 @@ public class FCClassic {
     	    
     	    long finalTime = System.currentTimeMillis();
     	    long processingTime = (finalTime - initialTime);
-    		System.out.println("Total Duration Time: "+processingTime +" milliseconds or "+ processingTime/1000+" seconds\n");
+    		System.out.println("Total Grouping Duration: "+processingTimeGroupingTotal +" milliseconds or "+ processingTimeGroupingTotal/1000+" seconds");
+    	    System.out.println("Total Duration Time: "+processingTime +" milliseconds or "+ processingTime/1000+" seconds\n");
 	    		    		
     	} catch (IOException e) {
     		System.out.println("There was an IO exception.");
@@ -443,6 +447,7 @@ public class FCClassic {
     	try {
     		System.out.println("Etapa 0: FC Classic - Spearman Correlation: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
     		long initialTime = System.currentTimeMillis();
+    		processingTimeGroupingTotal = 0;
     		
     		RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
 	    		public Recommender buildRecommender(DataModel model)throws TasteException
@@ -454,9 +459,10 @@ public class FCClassic {
 	    			
 	    			long finalTimeGrouping = System.currentTimeMillis();
 		    	    long processingTimeGrouping = (finalTimeGrouping - initialTimeGrouping);
+		    	    processingTimeGroupingTotal = processingTimeGroupingTotal +  processingTimeGrouping;
 		    	    System.out.println("Grouping Duration: "+processingTimeGrouping +" milliseconds ou "+ processingTimeGrouping/1000+" seconds");
 	    			
-	    			Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
+		    	    Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
 	    			return recommender;
 	    		}
 	    	};    		
@@ -483,6 +489,7 @@ public class FCClassic {
     	    
     	    long finalTime = System.currentTimeMillis();
     	    long processingTime = (finalTime - initialTime);
+    	    System.out.println("Total Grouping Duration: "+processingTimeGroupingTotal +" milliseconds or "+ processingTimeGroupingTotal/1000+" seconds");
     	    System.out.println("Total Duration Time: "+processingTime +" milliseconds or "+ processingTime/1000+" seconds\n");
 	    		    		
     	} catch (IOException e) {
@@ -498,6 +505,7 @@ public class FCClassic {
     	try {
     		System.out.println("Etapa 0: FC Classic - Euclidean Distance: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
     		long initialTime = System.currentTimeMillis();
+    		processingTimeGroupingTotal = 0;
     		
     		RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
 	    		public Recommender buildRecommender(DataModel model)throws TasteException
@@ -509,6 +517,7 @@ public class FCClassic {
 	    			
 	    			long finalTimeGrouping = System.currentTimeMillis();
 		    	    long processingTimeGrouping = (finalTimeGrouping - initialTimeGrouping);
+		    	    processingTimeGroupingTotal = processingTimeGroupingTotal +  processingTimeGrouping;
 		    	    System.out.println("Grouping Duration: "+processingTimeGrouping +" milliseconds ou "+ processingTimeGrouping/1000+" seconds");
 	    			
 	    			Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
@@ -538,6 +547,7 @@ public class FCClassic {
     	    
     	    long finalTime = System.currentTimeMillis();
     	    long processingTime = (finalTime - initialTime);
+    	    System.out.println("Total Grouping Duration: "+processingTimeGroupingTotal +" milliseconds or "+ processingTimeGroupingTotal/1000+" seconds");
     	    System.out.println("Total Duration Time: "+processingTime +" milliseconds or "+ processingTime/1000+" seconds\n");
 	    		    		
     	} catch (IOException e) {
@@ -553,6 +563,7 @@ public class FCClassic {
     	try {
     		System.out.println("Etapa 0: FC Classic - Tanimoto Coefficient: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
     		long initialTime = System.currentTimeMillis();
+    		processingTimeGroupingTotal = 0;
     		
     		RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
 	    		public Recommender buildRecommender(DataModel model)throws TasteException
@@ -564,6 +575,7 @@ public class FCClassic {
 	    			
 	    			long finalTimeGrouping = System.currentTimeMillis();
 		    	    long processingTimeGrouping = (finalTimeGrouping - initialTimeGrouping);
+		    	    processingTimeGroupingTotal = processingTimeGroupingTotal +  processingTimeGrouping;
 		    	    System.out.println("Grouping Duration: "+processingTimeGrouping +" milliseconds ou "+ processingTimeGrouping/1000+" seconds");
 	    			
 	    			Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
@@ -593,6 +605,7 @@ public class FCClassic {
     	    
     	    long finalTime = System.currentTimeMillis();
     	    long processingTime = (finalTime - initialTime);
+    	    System.out.println("Total Grouping Duration: "+processingTimeGroupingTotal +" milliseconds or "+ processingTimeGroupingTotal/1000+" seconds");
     	    System.out.println("Total Duration Time: "+processingTime +" milliseconds or "+ processingTime/1000+" seconds\n");
 	    		    		
     	} catch (IOException e) {
@@ -608,6 +621,7 @@ public class FCClassic {
     	try {
     		System.out.println("Etapa 0: FC Classic - Tanimoto Coefficient: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
     		long initialTime = System.currentTimeMillis();
+    		processingTimeGroupingTotal = 0;
     		
     		RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
 	    		public Recommender buildRecommender(DataModel model)throws TasteException
@@ -619,6 +633,7 @@ public class FCClassic {
 	    			
 	    			long finalTimeGrouping = System.currentTimeMillis();
 		    	    long processingTimeGrouping = (finalTimeGrouping - initialTimeGrouping);
+		    	    processingTimeGroupingTotal = processingTimeGroupingTotal +  processingTimeGrouping;
 		    	    System.out.println("Grouping Duration: "+processingTimeGrouping +" milliseconds ou "+ processingTimeGrouping/1000+" seconds");
 	    			
 	    			Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
@@ -648,6 +663,7 @@ public class FCClassic {
     	    
     	    long finalTime = System.currentTimeMillis();
     	    long processingTime = (finalTime - initialTime);
+    	    System.out.println("Total Grouping Duration: "+processingTimeGroupingTotal +" milliseconds or "+ processingTimeGroupingTotal/1000+" seconds");
     	    System.out.println("Total Duration Time: "+processingTime +" milliseconds or "+ processingTime/1000+" seconds\n");
 	    		    		
     	} catch (IOException e) {
