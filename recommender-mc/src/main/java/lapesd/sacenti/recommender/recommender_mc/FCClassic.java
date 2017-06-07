@@ -41,7 +41,7 @@ public class FCClassic {
 			RecommenderBuilder recommenderBuilder = new RecommenderBuilder() {
 				public Recommender buildRecommender(DataModel model) throws TasteException {                
 					UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
-					UserNeighborhood neighborhood = new NearestNUserNeighborhood (10, similarity, model);                
+					UserNeighborhood neighborhood = new NearestNUserNeighborhood (100, similarity, model);                
 					return new GenericUserBasedRecommender(model, neighborhood, similarity);                
 	        }
 			};

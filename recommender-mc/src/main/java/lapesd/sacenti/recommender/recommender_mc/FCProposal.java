@@ -47,7 +47,7 @@ public class FCProposal {
 						e.printStackTrace();
 					}
 					UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModelUserGenre);
-					UserNeighborhood neighborhood = new NearestNUserNeighborhood (10, similarity, dataModelUserGenre);                
+					UserNeighborhood neighborhood = new NearestNUserNeighborhood (100, similarity, dataModelUserGenre);                
 					return new GenericUserBasedRecommender(model, neighborhood, similarity);                
 	        }
 			};
