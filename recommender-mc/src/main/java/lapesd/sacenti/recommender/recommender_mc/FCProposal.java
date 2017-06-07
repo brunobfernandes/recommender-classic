@@ -26,7 +26,7 @@ import org.apache.mahout.cf.taste.recommender.UserBasedRecommender;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
 public class FCProposal {
-	public static double threshold = 0.6;
+	public static double threshold = 0.7;
 	public static FileDataModel dataModelUserGenre;
 //	public static String fileDataModelUserGenre = "data/userGenre604UsersNormalized.csv";
 	public static String fileDataModelUserGenre = "data/userGenreNormalized-dataset.csv";
@@ -72,6 +72,38 @@ public class FCProposal {
 		System.out.println("Número de usuários sem vizinhos: " + semvizinhos);
 		System.out.println("Número de usuários com TasteException: " + comException);
 	}
+	
+	public static void FCPropostaPearsonCorrelation(String datasetUserItenRating, double evaluationPercentage, double trainingPercentage) {
+		System.out.println("############################################################################################");
+		System.out.println("Step 0: FC Proposal - Pearson Correlation: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
+		processingTimeGroupingTotal = 0;
+		try {
+		FileDataModel model = new FileDataModel(new File(datasetUserItenRating));
+
+		long initialTimeGrouping = System.nanoTime();
+		long initialTimeSymilarity = System.nanoTime();
+		dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
+		UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModelUserGenre);
+		long similarityTime = System.nanoTime()-initialTimeSymilarity;
+		long initialTimeneighborhood = System.nanoTime();		
+		UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, model);
+		//UserNeighborhood neighborhood = new NearestNUserNeighborhood(100, similarity, dataModelUserGenre);
+		long UserNeighborhoodTime = System.nanoTime()-initialTimeneighborhood;
+		long processingTimeGrouping = (System.nanoTime() - initialTimeGrouping);
+		FCClassic.vizinhanca(model,neighborhood,similarity);
+		System.out.println("Similarity Duration: "+ similarityTime/1000+" ms");
+		System.out.println("Neighborhood Duration: "+ UserNeighborhoodTime/1000+" ms");	    			
+		System.out.println("Grouping Duration: "+ processingTimeGrouping/1000+" ms");
+//		Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);		
+		} catch (IOException e) {
+    		System.out.println("There was an IO exception.");
+			e.printStackTrace();
+    	} catch (TasteException e) {
+    		System.out.println("There was an Taste exception.");
+			e.printStackTrace();
+    	}	
+	}
+	
 
 	//FCGenreValueImplicit
 	public static void PearsonCorrelation(String datasetUserItenRating){
@@ -401,13 +433,12 @@ public class FCProposal {
 					UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModelUserGenre);
 					long similarityTime = System.nanoTime()-initialTimeSymilarity;
 					long initialTimeneighborhood = System.nanoTime();
-					UserNeighborhood neighborhood = new NearestNUserNeighborhood(30, similarity, model);
-
-	//				UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, dataModelUserGenre);    			    		
+					//UserNeighborhood neighborhood = new NearestNUserNeighborhood(30, similarity, model);
+					UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, dataModelUserGenre);    			    		
 					long UserNeighborhoodTime = System.nanoTime()-initialTimeneighborhood;
 					long processingTimeGrouping = (System.nanoTime() - initialTimeGrouping);
 
-    				FCProposal.vizinhanca( model,neighborhood,similarity);
+    				FCProposal.vizinhanca(model,neighborhood,similarity);
     				System.out.println("Similarity Duration: "+ similarityTime/1000+" ms");
     				System.out.println("Neighborhood Duration: "+ UserNeighborhoodTime/1000+" ms");	    			
     				System.out.println("Grouping Duration: "+ processingTimeGrouping/1000+" ms");
@@ -418,9 +449,9 @@ public class FCProposal {
 	    	}; 
     		FileDataModel dataModelUserItenRating = new FileDataModel(new File(datasetUserItenRating));
 			
-  		RecommenderEvaluator evaluator1 = new RMSRecommenderEvaluator();
+    		RecommenderEvaluator evaluator1 = new RMSRecommenderEvaluator();
     		double evaluetion_rmse = evaluator1.evaluate(userSimRecBuilder,null,dataModelUserItenRating, trainingPercentage, evaluationPercentage);
-  		System.out.println("RMSE: "+evaluetion_rmse);
+    		System.out.println("RMSE: "+evaluetion_rmse);
     		
     //		RecommenderEvaluator evaluator2 = new AverageAbsoluteDifferenceRecommenderEvaluator();
     //		double evaluetion_aade = evaluator2.evaluate(userSimRecBuilder, null, dataModelUserItenRating, trainingPercentage, evaluationPercentage);

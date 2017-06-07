@@ -42,35 +42,12 @@ public class App
     {
 		String datasetUserItenRating = "data/rating-dataset.csv";    	
 		double evaluationPercentage = 1.0;//controls how many of the users are used in  evaluation
-    	double trainingPercentage = 0.75; //percentage of each user's preferences to use to produce recommendations		
-    	
-    	//Algoritmos de Filtragem Colaborativa Clássicos
-		//FCClassic.PearsonCorrelation(datasetUserItenRating);
-		//FCClassic.SpearmanCorrelation(datasetUserItenRating);
-		//FCClassic.EuclideanDistance(datasetUserItenRating);
-		//FCClassic.TanimotoCoefficient(datasetUserItenRating);
-		//FCClassic.LogLikelihood(datasetUserItenRating);
-		
-		//Filtragem Colaborativa Com Entrada de Gêneros Implicito
-		//FCProposal.PearsonCorrelation(datasetUserItenRating);
-		//FCProposal.SpearmanCorrelation(datasetUserItenRating);
-		//FCProposal.EuclideanDistance(datasetUserItenRating);
-		//FCProposal.TanimotoCoefficient(datasetUserItenRating);
-		//FCProposal.LogLikelihood(datasetUserItenRating);
+    	double trainingPercentage = 0.25; //percentage of each user's preferences to use to produce recommendations		
     	
     	//Etapa 0 - FC Tradicional    
-  //  	FCClassic.FCPearsonCorrelation(datasetUserItenRating, evaluationPercentage, trainingPercentage);
-		FCClassic.Evaluation_PearsonCorrelation(datasetUserItenRating, evaluationPercentage, trainingPercentage);
-//		FCClassic.Evaluation_SpearmanCorrelation(datasetUserItenRating, evaluationPercentage, trainingPercentage);
-//		FCClassic.Evaluation_EuclideanDistance(datasetUserItenRating, evaluationPercentage, trainingPercentage);
-//		FCClassic.Evaluation_TanimotoCoefficient(datasetUserItenRating, evaluationPercentage, trainingPercentage);
-//		FCClassic.Evaluation_LogLikelihood(datasetUserItenRating, evaluationPercentage, trainingPercentage);
+    	FCClassic.Evaluation_PearsonCorrelation(datasetUserItenRating, evaluationPercentage, trainingPercentage);
 		
     	//Etapa 1 - FC Valores Implícitos
- //  	FCProposal.Evaluation_PearsonCorrelation(datasetUserItenRating, evaluationPercentage, trainingPercentage);    	    	
- //   	FCProposal.Evaluation_SpearmanCorrelation(datasetUserItenRating, evaluationPercentage, trainingPercentage);    	    	
- //   	FCProposal.Evaluation_EuclideanDistance(datasetUserItenRating, evaluationPercentage, trainingPercentage);    	    	
- //   	FCProposal.Evaluation_TanimotoCoefficient(datasetUserItenRating, evaluationPercentage, trainingPercentage);    	    	
- //   	FCProposal.Evaluation_LogLikelihood(datasetUserItenRating, evaluationPercentage, trainingPercentage);    	    	
+    	//FCProposal.Evaluation_PearsonCorrelation(datasetUserItenRating, evaluationPercentage, trainingPercentage);
     }   
 }

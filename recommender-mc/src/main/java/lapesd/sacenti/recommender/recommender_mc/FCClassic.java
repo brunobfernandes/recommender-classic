@@ -26,7 +26,7 @@ import org.apache.mahout.cf.taste.recommender.UserBasedRecommender;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
 public class FCClassic {
-	public static double threshold = 0.6;
+	public static double threshold = 0.7;
 	public static long processingTimeGroupingTotal;
 	
 	public static void vizinhanca(DataModel model, UserNeighborhood neighborhood, UserSimilarity similarity) throws TasteException {
@@ -68,7 +68,6 @@ public class FCClassic {
 		System.out.println("Número de usuários com TasteException: " + comException);
 	}
 	
-	
 	public static void FCPearsonCorrelation(String datasetUserItenRating, double evaluationPercentage, double trainingPercentage) {
 		System.out.println("############################################################################################");
 		System.out.println("Step 0: FC Classic - Pearson Correlation: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
@@ -82,6 +81,7 @@ public class FCClassic {
 		long similarityTime = System.nanoTime()-initialTimeSymilarity;
 		long initialTimeneighborhood = System.nanoTime();
 		UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, model);
+		//UserNeighborhood neighborhood = new NearestNUserNeighborhood(100, similarity, model);
 		long UserNeighborhoodTime = System.nanoTime()-initialTimeneighborhood;
 		long processingTimeGrouping = (System.nanoTime() - initialTimeGrouping);
 		FCClassic.vizinhanca(model,neighborhood,similarity);
@@ -97,7 +97,6 @@ public class FCClassic {
 			e.printStackTrace();
     	}	
 	}
-	
 	public static void SpearmanCorrelation(String datasetUserItenRating) {
 		/*Variação da medida Pearson Correlation, única diferença é que as avaliações 
 		 * dos itens são recalculadas de acordo com ranking das avaliações iniciais antes 
@@ -383,8 +382,8 @@ public class FCClassic {
 	    			UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
 					long similarityTime = System.nanoTime()-initialTimeSymilarity;
 					long initialTimeneighborhood = System.nanoTime();
-					UserNeighborhood neighborhood = new NearestNUserNeighborhood(70, similarity, model);
-	   // 			UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, model);
+					//UserNeighborhood neighborhood = new NearestNUserNeighborhood(70, similarity, model);
+	    			UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, model);
 					long UserNeighborhoodTime = System.nanoTime()-initialTimeneighborhood;
 					long processingTimeGrouping = (System.nanoTime() - initialTimeGrouping);
 
