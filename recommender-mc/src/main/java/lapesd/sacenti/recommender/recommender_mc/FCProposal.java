@@ -24,13 +24,55 @@ import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.apache.mahout.cf.taste.recommender.UserBasedRecommender;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
+import org.apache.mahout.common.RandomUtils;
 
 public class FCProposal {
 	public static double threshold = 0.7;
 	public static FileDataModel dataModelUserGenre;
-//	public static String fileDataModelUserGenre = "data/userGenre604UsersNormalized.csv";
 	public static String fileDataModelUserGenre = "data/userGenreNormalized-dataset.csv";
 	public static long processingTimeGroupingTotal;
+	
+	public static void Webmedia_Evaluation_PearsonCorrelation(String datasetUserItenRating){
+		try {
+			RandomUtils.useTestSeed(); // to randomize the evaluation result        
+			DataModel model = new FileDataModel(new File(datasetUserItenRating));
+	
+			RecommenderBuilder recommenderBuilder = new RecommenderBuilder() {
+				public Recommender buildRecommender(DataModel model) throws TasteException {
+					
+					try {
+						dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModelUserGenre);
+					UserNeighborhood neighborhood = new NearestNUserNeighborhood (10, similarity, dataModelUserGenre);                
+					return new GenericUserBasedRecommender(model, neighborhood, similarity);                
+	        }
+			};
+	    
+		    RecommenderEvaluator evaluator = new RMSRecommenderEvaluator();
+		    double evaluetion_rmse = evaluator.evaluate(recommenderBuilder, null, model, 0.7, 1.0);
+		    System.out.println("RMSE: " + evaluetion_rmse);
+		    
+		    //RecommenderEvaluator evaluator1 = new AverageAbsoluteDifferenceRecommenderEvaluator();
+    		//double evaluetion_aade = evaluator1.evaluate(recommenderBuilder, null, model, 0.7, 1.0);
+    		//System.out.println("AADE: " + evaluetion_aade);
+		    
+		    /*RecommenderIRStatsEvaluator statsEvaluator = new GenericRecommenderIRStatsEvaluator();
+		    IRStatistics stats = statsEvaluator.evaluate(recommenderBuilder, null, model, null, 10, 4, 0.7); // evaluate precision recall at 10
+		    System.out.println("Precision: " + stats.getPrecision());
+		    System.out.println("Recall: " + stats.getRecall());
+		    System.out.println("F1 Score: " + stats.getF1Measure());  */
+		} catch (IOException e) {
+    		System.out.println("There was an IO exception.");
+			e.printStackTrace();
+    	} catch (TasteException e) {
+    		System.out.println("There was an Taste exception.");
+			e.printStackTrace();
+    	}    
+	}
 	
 	public static void vizinhanca(DataModel model, UserNeighborhood neighborhood, UserSimilarity similarity) throws TasteException {
 		int Naonan=0;
@@ -103,7 +145,6 @@ public class FCProposal {
 			e.printStackTrace();
     	}	
 	}
-	
 
 	//FCGenreValueImplicit
 	public static void PearsonCorrelation(String datasetUserItenRating){

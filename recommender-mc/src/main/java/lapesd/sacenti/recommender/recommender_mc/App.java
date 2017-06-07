@@ -40,14 +40,13 @@ public class App
 	
     public static void main( String[] args )
     {
-		String datasetUserItenRating = "data/rating-dataset.csv";    	
-		double evaluationPercentage = 1.0;//controls how many of the users are used in  evaluation
-    	double trainingPercentage = 0.25; //percentage of each user's preferences to use to produce recommendations		
-    	
-    	//Etapa 0 - FC Tradicional    
-    	FCClassic.Evaluation_PearsonCorrelation(datasetUserItenRating, evaluationPercentage, trainingPercentage);
+		String datasetUserItenRating = "data/rating-trainningSet-5%.csv";    	
 		
-    	//Etapa 1 - FC Valores Implícitos
-    	//FCProposal.Evaluation_PearsonCorrelation(datasetUserItenRating, evaluationPercentage, trainingPercentage);
+		//Testes WebMedia - FC Tradicional
+		FCClassic.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating);
+		
+		//Testes WebMedia - FC Proposta
+		//FCClassic.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating);
+    	
     }   
 }

@@ -3,11 +3,14 @@ package lapesd.sacenti.recommender.recommender_mc;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-
+import org.apache.mahout.common.RandomUtils;
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.eval.IRStatistics;
 import org.apache.mahout.cf.taste.eval.RecommenderBuilder;
 import org.apache.mahout.cf.taste.eval.RecommenderEvaluator;
+import org.apache.mahout.cf.taste.eval.RecommenderIRStatsEvaluator;
 import org.apache.mahout.cf.taste.impl.eval.AverageAbsoluteDifferenceRecommenderEvaluator;
+import org.apache.mahout.cf.taste.impl.eval.GenericRecommenderIRStatsEvaluator;
 import org.apache.mahout.cf.taste.impl.eval.RMSRecommenderEvaluator;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
 import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
@@ -29,6 +32,43 @@ public class FCClassic {
 	public static double threshold = 0.7;
 	public static long processingTimeGroupingTotal;
 	
+	public static void Webmedia_Evaluation_PearsonCorrelation(String datasetUserItenRating){
+		try {
+		
+			RandomUtils.useTestSeed(); // to randomize the evaluation result        
+			DataModel model = new FileDataModel(new File(datasetUserItenRating));
+	
+			RecommenderBuilder recommenderBuilder = new RecommenderBuilder() {
+				public Recommender buildRecommender(DataModel model) throws TasteException {                
+					UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
+					UserNeighborhood neighborhood = new NearestNUserNeighborhood (10, similarity, model);                
+					return new GenericUserBasedRecommender(model, neighborhood, similarity);                
+	        }
+			};
+	    
+		    RecommenderEvaluator evaluator = new RMSRecommenderEvaluator();
+		    double evaluetion_rmse = evaluator.evaluate(recommenderBuilder, null, model, 0.7, 1.0);
+		    System.out.println("RMSE: " + evaluetion_rmse);
+		    
+		    //RecommenderEvaluator evaluator1 = new AverageAbsoluteDifferenceRecommenderEvaluator();
+    		//double evaluetion_aade = evaluator1.evaluate(recommenderBuilder, null, model, 0.7, 1.0);
+    		//System.out.println("AADE: " + evaluetion_aade);
+		    
+		    /*RecommenderIRStatsEvaluator statsEvaluator = new GenericRecommenderIRStatsEvaluator();
+		    IRStatistics stats = statsEvaluator.evaluate(recommenderBuilder, null, model, null, 10, 4, 0.7); // evaluate precision recall at 10
+		    System.out.println("Precision: " + stats.getPrecision());
+		    System.out.println("Recall: " + stats.getRecall());
+		    System.out.println("F1 Score: " + stats.getF1Measure());  */
+		} catch (IOException e) {
+    		System.out.println("There was an IO exception.");
+			e.printStackTrace();
+    	} catch (TasteException e) {
+    		System.out.println("There was an Taste exception.");
+			e.printStackTrace();
+    	}    
+	}
+	
+		
 	public static void vizinhanca(DataModel model, UserNeighborhood neighborhood, UserSimilarity similarity) throws TasteException {
 		int Naonan=0;
 		int usuarionaoexiste=0;
@@ -67,6 +107,7 @@ public class FCClassic {
 		System.out.println("Número de usuários sem vizinhos: " + semvizinhos);
 		System.out.println("Número de usuários com TasteException: " + comException);
 	}
+	
 	
 	public static void FCPearsonCorrelation(String datasetUserItenRating, double evaluationPercentage, double trainingPercentage) {
 		System.out.println("############################################################################################");
@@ -367,14 +408,16 @@ public class FCClassic {
     	}
 		
 	}
-		
+	
 	public static void Evaluation_PearsonCorrelation(String datasetUserItenRating, double evaluationPercentage, double trainingPercentage) 
     {
   	try {
   			System.out.println("############################################################################################");
     		System.out.println("Step 0: FC Classic - Pearson Correlation: "+evaluationPercentage+"% of dataset and "+trainingPercentage+"% User ratings");
+    		RandomUtils.useTestSeed(); // to randomize the evaluation result
+	    	DataModel dataModelUserItenRating = new FileDataModel(new File(datasetUserItenRating));
     		
-    		RecommenderBuilder userSimRecBuilder = new RecommenderBuilder() {
+    		RecommenderBuilder recommenderBuilder = new RecommenderBuilder() {
 	    		public Recommender buildRecommender(DataModel model)throws TasteException
 	    		{
 	    			long initialTimeGrouping = System.nanoTime();
@@ -395,17 +438,28 @@ public class FCClassic {
     				Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
 	    			return recommender;
 	    		}
-	    	};    	
-
-    		FileDataModel dataModelUserItenRating = new FileDataModel(new File(datasetUserItenRating));
+	    	}; 
+    		// Recommend certain number of items for a particular user
+  	        // Here, recommending 5 items to user_id = 9
+  	        /*Recommender recommender = recommenderBuilder.buildRecommender(model);
+  	        List<RecommendedItem> recomendations = recommender.recommend(9, 5);
+  	        for (RecommendedItem recommendedItem : recomendations) {
+  	            System.out.println(recommendedItem);    
+  	        }*/
     		
-    		RecommenderEvaluator evaluator1 = new RMSRecommenderEvaluator();
-    		double evaluetion_rmse = evaluator1.evaluate(userSimRecBuilder,null,dataModelUserItenRating, trainingPercentage, evaluationPercentage);
+    		RecommenderEvaluator evaluator = new RMSRecommenderEvaluator();
+    		double evaluetion_rmse = evaluator.evaluate(recommenderBuilder,null,dataModelUserItenRating, trainingPercentage, evaluationPercentage);
+    		System.out.println("RMSE: "+evaluetion_rmse);
+    		
+    		evaluetion_rmse = evaluator.evaluate(recommenderBuilder,null,dataModelUserItenRating, trainingPercentage, evaluationPercentage);
+    		System.out.println("RMSE: "+evaluetion_rmse);
+    		
+    		evaluetion_rmse = evaluator.evaluate(recommenderBuilder,null,dataModelUserItenRating, trainingPercentage, evaluationPercentage);
     		System.out.println("RMSE: "+evaluetion_rmse);
 
-   //		RecommenderEvaluator evaluator2 = new AverageAbsoluteDifferenceRecommenderEvaluator();
-  // 		double evaluetion_aade = evaluator2.evaluate(userSimRecBuilder, null, dataModelUserItenRating, trainingPercentage, evaluationPercentage);
-  // 		System.out.println("AADE: " + evaluetion_aade);
+    		//RecommenderEvaluator evaluator1 = new AverageAbsoluteDifferenceRecommenderEvaluator();
+    		//double evaluetion_aade = evaluator1.evaluate(recommenderBuilder, null, dataModelUserItenRating, trainingPercentage, evaluationPercentage);
+    		//System.out.println("AADE: " + evaluetion_aade);
     		
     	} catch (IOException e) {
     		System.out.println("There was an IO exception.");
@@ -433,7 +487,7 @@ public class FCClassic {
     		//???????????relevanceThreshold – items whose preference value is at least this value are considered “relevant” for the purposes of computations
     		/*RecommenderIRStatsEvaluator evaluator3 = new GenericRecommenderIRStatsEvaluator();
     		//recommenderBuilder; dataModelBuilder; dataModel; rescorer; at; relevanceThreshold; evaluationPercentage
-    		IRStatistics medidaAvaliacao = evaluator3.evaluate(userSimRecBuilder, null, dataModelUserItenRating, null, 10, 5, evaluationPercentage);
+    		IRStatistics medidaAvaliacao = evaluator3.evaluate(recommenderBuilder, null, dataModelUserItenRating, null, 10, 4, evaluationPercentage);
     	    System.out.println("Precision: "+ medidaAvaliacao.getPrecision());
     	    System.out.println("Recall: "+ medidaAvaliacao.getRecall());
     	    System.out.println("FallOut: "+ medidaAvaliacao.getFallOut());
