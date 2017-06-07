@@ -33,6 +33,8 @@ public class FCProposal {
 	public static long processingTimeGroupingTotal;
 	
 	public static void Webmedia_Evaluation_PearsonCorrelation(String datasetUserItenRating){
+		System.out.println("##################################");
+		System.out.println("FH Proposal - Pearson Correlation");
 		try {
 			RandomUtils.useTestSeed(); // to randomize the evaluation result        
 			DataModel model = new FileDataModel(new File(datasetUserItenRating));

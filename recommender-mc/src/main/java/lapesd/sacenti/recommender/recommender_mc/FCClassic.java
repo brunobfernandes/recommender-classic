@@ -33,6 +33,8 @@ public class FCClassic {
 	public static long processingTimeGroupingTotal;
 	
 	public static void Webmedia_Evaluation_PearsonCorrelation(String datasetUserItenRating){
+		System.out.println("##################################");
+		System.out.println("FC Classic - Pearson Correlation");
 		try {
 		
 			RandomUtils.useTestSeed(); // to randomize the evaluation result        
@@ -67,6 +69,7 @@ public class FCClassic {
 			e.printStackTrace();
     	}    
 	}
+	
 	
 		
 	public static void vizinhanca(DataModel model, UserNeighborhood neighborhood, UserSimilarity similarity) throws TasteException {
