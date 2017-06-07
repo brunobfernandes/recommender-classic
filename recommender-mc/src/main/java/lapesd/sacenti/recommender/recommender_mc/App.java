@@ -40,13 +40,26 @@ public class App
 	
     public static void main( String[] args )
     {
-		String datasetUserItenRating = "data/rating-trainningSet-5%.csv";    	
 		
-		//Testes WebMedia - FC Tradicional
-		FCClassic.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating);
+    	String datasetUserItenRating5perc = "data/rating-trainningSet-5%.csv";
+		FCClassic.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating5perc);
+		FCProposal.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating5perc);
 		
-		//Testes WebMedia - FC Proposta
-		//FCClassic.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating);
-    	
+		//String datasetUserItenRating25perc = "data/rating-trainningSet-25%.csv";
+		//FCClassic.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating25perc);
+		//FCProposal.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating25perc);
+		
+		//String datasetUserItenRating50perc = "data/rating-trainningSet-50%.csv";
+		//FCClassic.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating50perc);
+		//FCProposal.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating50perc);
+		
+		//String datasetUserItenRating75perc = "data/rating-trainningSet-75%.csv";
+		//FCClassic.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating75perc);
+		//FCProposal.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating75perc);
+		
+		//String datasetUserItenRating100perc = "data/rating-trainningSet-100%.csv";
+		//FCClassic.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating100perc);
+		//FCProposal.Webmedia_Evaluation_PearsonCorrelation(datasetUserItenRating100perc);
+		
     }   
 }
