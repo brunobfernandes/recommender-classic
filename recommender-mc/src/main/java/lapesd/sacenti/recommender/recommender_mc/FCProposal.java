@@ -5,9 +5,12 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.eval.IRStatistics;
 import org.apache.mahout.cf.taste.eval.RecommenderBuilder;
 import org.apache.mahout.cf.taste.eval.RecommenderEvaluator;
+import org.apache.mahout.cf.taste.eval.RecommenderIRStatsEvaluator;
 import org.apache.mahout.cf.taste.impl.eval.AverageAbsoluteDifferenceRecommenderEvaluator;
+import org.apache.mahout.cf.taste.impl.eval.GenericRecommenderIRStatsEvaluator;
 import org.apache.mahout.cf.taste.impl.eval.RMSRecommenderEvaluator;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
 import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
@@ -27,46 +30,40 @@ import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 import org.apache.mahout.common.RandomUtils;
 
 public class FCProposal {
-	public static double threshold = 0.7;
+	public static double threshold = 0.9;
 	public static FileDataModel dataModelUserGenre;
 	public static String fileDataModelUserGenre = "data/userGenreNormalized-dataset.csv";
 	public static long processingTimeGroupingTotal;
 	
 	public static void Webmedia_Evaluation_PearsonCorrelation(String datasetUserItenRating){
-		System.out.println("##################################");
 		System.out.println("FH Proposal - Pearson Correlation");
 		try {
 			RandomUtils.useTestSeed(); // to randomize the evaluation result        
 			DataModel model = new FileDataModel(new File(datasetUserItenRating));
-	
+			dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
+			
 			RecommenderBuilder recommenderBuilder = new RecommenderBuilder() {
 				public Recommender buildRecommender(DataModel model) throws TasteException {
-					
-					try {
-						dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
 					UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModelUserGenre);
+					//UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, dataModelUserGenre);
 					UserNeighborhood neighborhood = new NearestNUserNeighborhood (100, similarity, dataModelUserGenre);                
 					return new GenericUserBasedRecommender(model, neighborhood, similarity);                
-	        }
+				}
 			};
 	    
-		    RecommenderEvaluator evaluator = new RMSRecommenderEvaluator();
+			RecommenderEvaluator evaluator = new RMSRecommenderEvaluator();
 		    double evaluetion_rmse = evaluator.evaluate(recommenderBuilder, null, model, 0.7, 1.0);
 		    System.out.println("RMSE: " + evaluetion_rmse);
 		    
-		    //RecommenderEvaluator evaluator1 = new AverageAbsoluteDifferenceRecommenderEvaluator();
-    		//double evaluetion_aade = evaluator1.evaluate(recommenderBuilder, null, model, 0.7, 1.0);
-    		//System.out.println("AADE: " + evaluetion_aade);
-		    
-		    /*RecommenderIRStatsEvaluator statsEvaluator = new GenericRecommenderIRStatsEvaluator();
-		    IRStatistics stats = statsEvaluator.evaluate(recommenderBuilder, null, model, null, 10, 4, 0.7); // evaluate precision recall at 10
+		    RecommenderEvaluator evaluator1 = new AverageAbsoluteDifferenceRecommenderEvaluator();
+    		double evaluetion_aade = evaluator1.evaluate(recommenderBuilder, null, model, 0.7, 1.0);
+    		System.out.println("AADE: " + evaluetion_aade);
+			
+			/*RecommenderIRStatsEvaluator statsEvaluator = new GenericRecommenderIRStatsEvaluator();
+	        IRStatistics stats = statsEvaluator.evaluate(recommenderBuilder, null, model, null, 10, 4, 0.7); // evaluate precision recall at 10
 		    System.out.println("Precision: " + stats.getPrecision());
 		    System.out.println("Recall: " + stats.getRecall());
-		    System.out.println("F1 Score: " + stats.getF1Measure());  */
+		    System.out.println("F1 Score: " + stats.getF1Measure());*/
 		} catch (IOException e) {
     		System.out.println("There was an IO exception.");
 			e.printStackTrace();
@@ -74,6 +71,38 @@ public class FCProposal {
     		System.out.println("There was an Taste exception.");
 			e.printStackTrace();
     	}    
+	}
+	public static void Webmedia_TimeAndAverageNeighbors_PearsonCorrelation(String datasetUserItenRating){
+		System.out.println("FH Proposal - Pearson Correlation");
+		processingTimeGroupingTotal = 0;
+		try {
+			RandomUtils.useTestSeed(); // to randomize the evaluation result 
+			FileDataModel model = new FileDataModel(new File(datasetUserItenRating));
+			dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
+	
+			long initialTimeGrouping = System.nanoTime();
+			long initialTimeSymilarity = System.nanoTime();
+			UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModelUserGenre);
+			long similarityTime = System.nanoTime()-initialTimeSymilarity;
+			long initialTimeneighborhood = System.nanoTime();
+			UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, model);
+			//UserNeighborhood neighborhood = new NearestNUserNeighborhood(100, similarity, dataModelUserGenre);
+			long UserNeighborhoodTime = System.nanoTime()-initialTimeneighborhood;
+			long processingTimeGrouping = (System.nanoTime() - initialTimeGrouping);
+			//FCClassic.vizinhanca(model,neighborhood,similarity);
+			System.out.println("Similarity Duration: "+ similarityTime/1000+" ms");
+			System.out.println("Neighborhood Duration: "+ UserNeighborhoodTime/1000+" ms");	    			
+			System.out.println("Grouping Duration: "+ processingTimeGrouping/1000+" ms");
+			//Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);	
+			System.out.print("\n");
+		        
+		} catch (IOException e) {
+			System.out.println("There was an IO exception.");
+			e.printStackTrace();
+		} catch (TasteException e) {
+			System.out.println("There was an Taste exception.");
+			e.printStackTrace();
+		}		
 	}
 	
 	public static void vizinhanca(DataModel model, UserNeighborhood neighborhood, UserSimilarity similarity) throws TasteException {
@@ -211,6 +240,7 @@ public class FCProposal {
 			e.printStackTrace();
     	}	    	
    }
+	
 	public static void SpearmanCorrelation(String datasetUserItenRating){
 		System.out.println("Spearman Correlation");
 		UserSimilarity similarity;
