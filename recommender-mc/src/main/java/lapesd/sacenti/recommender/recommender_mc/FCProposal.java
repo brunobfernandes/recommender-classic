@@ -9,6 +9,7 @@ import org.apache.mahout.cf.taste.eval.IRStatistics;
 import org.apache.mahout.cf.taste.eval.RecommenderBuilder;
 import org.apache.mahout.cf.taste.eval.RecommenderEvaluator;
 import org.apache.mahout.cf.taste.eval.RecommenderIRStatsEvaluator;
+import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
 import org.apache.mahout.cf.taste.impl.eval.AverageAbsoluteDifferenceRecommenderEvaluator;
 import org.apache.mahout.cf.taste.impl.eval.GenericRecommenderIRStatsEvaluator;
 import org.apache.mahout.cf.taste.impl.eval.RMSRecommenderEvaluator;
@@ -32,7 +33,7 @@ import org.apache.mahout.common.RandomUtils;
 public class FCProposal {
 	public static double threshold = 0.9;
 	public static FileDataModel dataModelUserGenre;
-	public static String fileDataModelUserGenre = "data/userGenreNormalized-dataset.csv";
+	public static String fileDataModelUserGenre = "data/matrixOfPreferenceV3.csv";
 	public static long processingTimeGroupingTotal;
 	
 	public static void Webmedia_Evaluation_PearsonCorrelation(String datasetUserItenRating){
@@ -90,10 +91,10 @@ public class FCProposal {
 			long UserNeighborhoodTime = System.nanoTime()-initialTimeneighborhood;
 			long processingTimeGrouping = (System.nanoTime() - initialTimeGrouping);
 			//FCClassic.vizinhanca(model,neighborhood,similarity);
-			System.out.println("Similarity Duration: "+ similarityTime/1000+" ms");
-			System.out.println("Neighborhood Duration: "+ UserNeighborhoodTime/1000+" ms");	    			
+			//System.out.println("Similarity Duration: "+ similarityTime/1000+" ms");
+			//System.out.println("Neighborhood Duration: "+ UserNeighborhoodTime/1000+" ms");	    			
 			System.out.println("Grouping Duration: "+ processingTimeGrouping/1000+" ms");
-			//Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);	
+			//Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);				
 			System.out.print("\n");
 		        
 		} catch (IOException e) {
@@ -104,6 +105,59 @@ public class FCProposal {
 			e.printStackTrace();
 		}		
 	}
+	public static void Webmedia_numberUsersCriterionNeighbordhood(String datasetUserItenRating){
+		try {
+			RandomUtils.useTestSeed(); // to randomize the evaluation result
+			dataModelUserGenre = new FileDataModel(new File(fileDataModelUserGenre));
+        	FileDataModel model = new FileDataModel(new File(datasetUserItenRating));
+        	UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModelUserGenre);
+            //UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, dataModelUserItenRating);
+        	UserNeighborhood neighborhood = new NearestNUserNeighborhood(100, similarity, dataModelUserGenre);
+        	UserBasedRecommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
+        	//FCClassic.vizinhanca(model,neighborhood,similarity);
+        	
+            long userId;
+            long[] recommendedUserIDs;
+            int contUsersCriterion00 = 0;
+            int contUsersCriterion09 = 0;
+            for (int i=1;i<=model.getNumUsers();i++){
+    			
+				userId= i;
+				//int cont = 1;
+				recommendedUserIDs = recommender.mostSimilarUserIDs(userId, 100);
+				for(long recID:recommendedUserIDs)
+				{
+					if(similarity.userSimilarity(userId, recID) < 0.0)
+						contUsersCriterion00++;
+					if(similarity.userSimilarity(userId, recID) < 0.9)
+						contUsersCriterion09++;
+					//System.out.println(cont+" Usuário "+userId+" similar com Usuário "+recID +" similaridade de : "+similarity.userSimilarity(userId, recID));
+					//cont++;
+				}
+				//cont=1;
+				//System.out.print("\n");
+			}
+            /*int somavizinhos = 0;
+    		long[] vizinhanca;
+    		for (int i=1;i<=model.getNumUsers();i++) {
+    				vizinhanca = neighborhood.getUserNeighborhood(i);
+    				if (vizinhanca!=null)
+    					somavizinhos += vizinhanca.length;
+    		}*/
+            System.out.println("Total de Usuários no Dataset: "+model.getNumUsers());
+    		//System.out.println("Média da vizinhança: " + somavizinhos/model.getNumUsers());
+    		System.out.println("Total de pares de vizinhança abaixo da limiar 0.0: "+contUsersCriterion00);
+    		System.out.println("Média de pares de vizinhança abaixo da limiar 0.0: "+contUsersCriterion00/model.getNumUsers());			
+    		System.out.println("Total de pares de vizinhança abaixo da limiar 0.9: "+contUsersCriterion09);
+    		System.out.println("Média de pares de vizinhança abaixo da limiar 0.9: "+contUsersCriterion09/model.getNumUsers());
+		}catch (IOException e) {
+    		System.out.println("There was an IO exception.");
+			e.printStackTrace();
+    	} catch (TasteException e) {
+    		System.out.println("There was an Taste exception.");
+			e.printStackTrace();
+    	}	    	
+   }
 	
 	public static void vizinhanca(DataModel model, UserNeighborhood neighborhood, UserSimilarity similarity) throws TasteException {
 		int Naonan=0;
@@ -204,8 +258,8 @@ public class FCProposal {
                     System.out.println("Usuário "+userId+" similar com Usuário "+recID +" similaridade de : "+similarity.userSimilarity(userId, recID));
                 }
             }
-            /* //Imprime usuários similares
-            for(LongPrimitiveIterator users=dataModelUserItenRating.getUserIDs(); users.hasNext(); )
+             //Imprime usuários similares
+            /*for(LongPrimitiveIterator users=dataModelUserItenRating.getUserIDs(); users.hasNext(); )
 	         {
 	             long userId = users.nextLong();
 	             long[] recommendedUserIDs = recommender.mostSimilarUserIDs(userId, 5); 
@@ -215,7 +269,7 @@ public class FCProposal {
 	                 System.out.println("Usuário "+userId+" similar com Usuário "+recId +" similaridade de : "+similarity.userSimilarity(userId, recId));
 	             }
 	  
-	         }*/
+	         }/*
             long[] theNeighborhood;
 	         //Especifica o Id do usuário e a qtd de itens a recomendar
 	         for(int idUser=1; idUser<=2; idUser++){
