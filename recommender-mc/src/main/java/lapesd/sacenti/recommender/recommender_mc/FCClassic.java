@@ -3,6 +3,8 @@ package lapesd.sacenti.recommender.recommender_mc;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.mahout.common.RandomUtils;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.eval.IRStatistics;
@@ -27,6 +29,7 @@ import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.apache.mahout.cf.taste.recommender.UserBasedRecommender;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
+import org.apache.mahout.classifier.df.DFUtils;
 
 public class FCClassic {
 	public static double threshold = 0.9;
@@ -77,18 +80,21 @@ public class FCClassic {
 			FileDataModel model = new FileDataModel(new File(datasetUserItenRating));
 			
 			long initialTimeGrouping = System.nanoTime();
-			long initialTimeSymilarity = System.nanoTime();
+			
+			//long initialTimeSymilarity = System.nanoTime();
 			UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
-			long similarityTime = System.nanoTime()-initialTimeSymilarity;
-			long initialTimeneighborhood = System.nanoTime();
-			UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, model);
-			//UserNeighborhood neighborhood = new NearestNUserNeighborhood(100, similarity, dataModelUserGenre);
-			long UserNeighborhoodTime = System.nanoTime()-initialTimeneighborhood;
+			//long similarityTime = System.nanoTime()-initialTimeSymilarity;
+			
+			//long initialTimeneighborhood = System.nanoTime();
+			//UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, model);
+			UserNeighborhood neighborhood = new NearestNUserNeighborhood(100, similarity, model);
+			//long UserNeighborhoodTime = System.nanoTime()-initialTimeneighborhood;
+			
 			long processingTimeGrouping = (System.nanoTime() - initialTimeGrouping);
-			FCClassic.vizinhanca(model,neighborhood,similarity);
-			//System.out.println("Similarity Duration: "+ similarityTime/1000+" ms");
-			//System.out.println("Neighborhood Duration: "+ UserNeighborhoodTime/1000+" ms");	    			
-			//System.out.println("Grouping Duration: "+ processingTimeGrouping/1000+" ms");
+			
+			//FCClassic.vizinhanca(model,neighborhood,similarity);
+			System.out.println("Total execution time: " + String.format("%d ns", TimeUnit.NANOSECONDS.toNanos(processingTimeGrouping)));
+			System.out.println("Total execution time: " + String.format("%d ms", TimeUnit.NANOSECONDS.toMillis(processingTimeGrouping)));
 			//Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
 			//System.out.print("\n");
 		        
@@ -106,45 +112,73 @@ public class FCClassic {
         	FileDataModel model = new FileDataModel(new File(datasetUserItenRating));
         	UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
             //UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, dataModelUserItenRating);
-        	UserNeighborhood neighborhood = new NearestNUserNeighborhood(100, 0.9 ,similarity, model);
+        	UserNeighborhood neighborhood = new NearestNUserNeighborhood(100, similarity, model);
         	UserBasedRecommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
         	//FCClassic.vizinhanca(model,neighborhood,similarity);
         	
             long userId;
             long[] recommendedUserIDs;
+            long[] vizinhança;
+            int userMediaCriterioFinal = 0;
             int contUsersCriterion00 = 0;
+            int contUsersCriterion05 = 0;
+            int contUsersCriterion07 = 0;
             int contUsersCriterion09 = 0;
+            int qtdVizinhos100 = 0; 
             for (int i=1;i<=model.getNumUsers();i++){
     			
 				userId= i;
-				int cont = 1;
+				//int cont = 1;
+				vizinhança = neighborhood.getUserNeighborhood(userId);
+				if(vizinhança.length==100)
+					qtdVizinhos100++;
+				
 				recommendedUserIDs = recommender.mostSimilarUserIDs(userId, 100);
 				for(long recID:recommendedUserIDs)
 				{
 					if(similarity.userSimilarity(userId, recID) < 0.0)
 						contUsersCriterion00++;
+					
+					if(similarity.userSimilarity(userId, recID) < 0.5){
+							contUsersCriterion05++;
+							userMediaCriterioFinal++;
+					}
+					if(similarity.userSimilarity(userId, recID) < 0.7)
+						contUsersCriterion07++;
+					
 					if(similarity.userSimilarity(userId, recID) < 0.9)
 						contUsersCriterion09++;
 						
 					//System.out.println(cont+" Usuário "+userId+" similar com Usuário "+recID +" similaridade de : "+similarity.userSimilarity(userId, recID));
-					cont++;
+					//cont++;
 				}
-				cont=1;
+				System.out.println("Usuário "+userId+" total de vizinhos: "+vizinhança.length+" nº vizinhos abaixo de 0.5; "+ contUsersCriterion05);
+				contUsersCriterion05=0;
+				//cont=1;
 				//System.out.print("\n");
 			}
             int somavizinhos = 0;
-    		long[] vizinhanca;
+    		long[] vizinhanca2;
     		for (int i=1;i<=model.getNumUsers();i++) {
-    				vizinhanca = neighborhood.getUserNeighborhood(i);
-    				if (vizinhanca!=null)
-    					somavizinhos += vizinhanca.length;
+    				vizinhanca2 = neighborhood.getUserNeighborhood(i);
+    				if (vizinhanca2!=null)
+    					somavizinhos += vizinhanca2.length;
     		}
     		//System.out.println("Total de Usuários no Dataset: "+model.getNumUsers());
-    		System.out.println("Média da vizinhança: " + somavizinhos/model.getNumUsers());
-    		//System.out.println("Total de pares de vizinhança abaixo da limiar 0.0: "+contUsersCriterion00);
-    		System.out.println("Média de pares de vizinhança abaixo da limiar 0.0: "+contUsersCriterion00/model.getNumUsers());			
-    		//System.out.println("Total de pares de vizinhança abaixo da limiar 0.9: "+contUsersCriterion09);
-    		System.out.println("Média de pares de vizinhança abaixo da limiar 0.9: "+contUsersCriterion09/model.getNumUsers());
+    		//System.out.println("Média da vizinhança: " + somavizinhos/model.getNumUsers());
+    		System.out.println("Total de usuários vizinhança igual a 100: "+qtdVizinhos100+"\n");
+    		
+    		System.out.println("Total de pares de vizinhança abaixo da limiar 0.0: "+contUsersCriterion00);
+    		System.out.println("Média de pares de vizinhança abaixo da limiar 0.0: "+contUsersCriterion00/model.getNumUsers()+"\n");			
+    		
+    		System.out.println("Total de pares de vizinhança abaixo da limiar 0.5: "+userMediaCriterioFinal);
+    		System.out.println("Média de pares de vizinhança abaixo da limiar 0.5: "+userMediaCriterioFinal/model.getNumUsers()+"\n");
+    		
+    		System.out.println("Total de pares de vizinhança abaixo da limiar 0.5: "+contUsersCriterion07);
+    		System.out.println("Média de pares de vizinhança abaixo da limiar 0.5: "+contUsersCriterion07/model.getNumUsers()+"\n");
+    		
+    		System.out.println("Total de pares de vizinhança abaixo da limiar 0.9: "+contUsersCriterion09);
+    		System.out.println("Média de pares de vizinhança abaixo da limiar 0.9: "+contUsersCriterion00/model.getNumUsers());	
 		}catch (IOException e) {
     		System.out.println("There was an IO exception.");
 			e.printStackTrace();

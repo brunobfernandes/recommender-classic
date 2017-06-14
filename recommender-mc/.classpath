@@ -22,5 +22,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/bruno/Dropbox/SRO/Bruno/1 - Qualificação/Implementação/Roberto/recommender-classic/recommender-mc/log4j/log4j.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
