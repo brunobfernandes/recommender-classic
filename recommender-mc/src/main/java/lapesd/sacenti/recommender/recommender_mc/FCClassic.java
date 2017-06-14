@@ -42,8 +42,8 @@ public class FCClassic {
 			RecommenderBuilder recommenderBuilder = new RecommenderBuilder() {
 				public Recommender buildRecommender(DataModel model) throws TasteException {                
 					UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
-					//UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, model);
-					UserNeighborhood neighborhood = new NearestNUserNeighborhood (100, similarity, model);                
+					UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, model);
+					//UserNeighborhood neighborhood = new NearestNUserNeighborhood (100, similarity, model);                
 					return new GenericUserBasedRecommender(model, neighborhood, similarity);                
 	        }
 			};
@@ -85,12 +85,12 @@ public class FCClassic {
 			//UserNeighborhood neighborhood = new NearestNUserNeighborhood(100, similarity, dataModelUserGenre);
 			long UserNeighborhoodTime = System.nanoTime()-initialTimeneighborhood;
 			long processingTimeGrouping = (System.nanoTime() - initialTimeGrouping);
-			//FCClassic.vizinhanca(model,neighborhood,similarity);
+			FCClassic.vizinhanca(model,neighborhood,similarity);
 			//System.out.println("Similarity Duration: "+ similarityTime/1000+" ms");
 			//System.out.println("Neighborhood Duration: "+ UserNeighborhoodTime/1000+" ms");	    			
-			System.out.println("Grouping Duration: "+ processingTimeGrouping/1000+" ms");
+			//System.out.println("Grouping Duration: "+ processingTimeGrouping/1000+" ms");
 			//Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
-			System.out.print("\n");
+			//System.out.print("\n");
 		        
 		} catch (IOException e) {
 			System.out.println("There was an IO exception.");
@@ -106,7 +106,7 @@ public class FCClassic {
         	FileDataModel model = new FileDataModel(new File(datasetUserItenRating));
         	UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
             //UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, dataModelUserItenRating);
-        	UserNeighborhood neighborhood = new NearestNUserNeighborhood(100, similarity, model);
+        	UserNeighborhood neighborhood = new NearestNUserNeighborhood(100, 0.9 ,similarity, model);
         	UserBasedRecommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
         	//FCClassic.vizinhanca(model,neighborhood,similarity);
         	
@@ -117,7 +117,7 @@ public class FCClassic {
             for (int i=1;i<=model.getNumUsers();i++){
     			
 				userId= i;
-				//int cont = 1;
+				int cont = 1;
 				recommendedUserIDs = recommender.mostSimilarUserIDs(userId, 100);
 				for(long recID:recommendedUserIDs)
 				{
@@ -125,24 +125,25 @@ public class FCClassic {
 						contUsersCriterion00++;
 					if(similarity.userSimilarity(userId, recID) < 0.9)
 						contUsersCriterion09++;
+						
 					//System.out.println(cont+" Usuário "+userId+" similar com Usuário "+recID +" similaridade de : "+similarity.userSimilarity(userId, recID));
-					//cont++;
+					cont++;
 				}
-				//cont=1;
+				cont=1;
 				//System.out.print("\n");
 			}
-            /*int somavizinhos = 0;
+            int somavizinhos = 0;
     		long[] vizinhanca;
     		for (int i=1;i<=model.getNumUsers();i++) {
     				vizinhanca = neighborhood.getUserNeighborhood(i);
     				if (vizinhanca!=null)
     					somavizinhos += vizinhanca.length;
-    		}*/
-    		System.out.println("Total de Usuários no Dataset: "+model.getNumUsers());
-    		//System.out.println("Média da vizinhança: " + somavizinhos/model.getNumUsers());
-    		System.out.println("Total de pares de vizinhança abaixo da limiar 0.0: "+contUsersCriterion00);
+    		}
+    		//System.out.println("Total de Usuários no Dataset: "+model.getNumUsers());
+    		System.out.println("Média da vizinhança: " + somavizinhos/model.getNumUsers());
+    		//System.out.println("Total de pares de vizinhança abaixo da limiar 0.0: "+contUsersCriterion00);
     		System.out.println("Média de pares de vizinhança abaixo da limiar 0.0: "+contUsersCriterion00/model.getNumUsers());			
-    		System.out.println("Total de pares de vizinhança abaixo da limiar 0.9: "+contUsersCriterion09);
+    		//System.out.println("Total de pares de vizinhança abaixo da limiar 0.9: "+contUsersCriterion09);
     		System.out.println("Média de pares de vizinhança abaixo da limiar 0.9: "+contUsersCriterion09/model.getNumUsers());
 		}catch (IOException e) {
     		System.out.println("There was an IO exception.");
@@ -166,11 +167,11 @@ public class FCClassic {
     			usuarionaoexiste++;
     		}
 		}
-		System.out.println("Total de Usuários: " + model.getNumUsers());
+		//System.out.println("Total de Usuários: " + model.getNumUsers());
 
-		System.out.println("Total de Itens: " + model.getNumItems());
-		System.out.println("Vizinhos com similaridade com U1: " + Naonan);
-		System.out.println("Total de Usuários que não existem: " + usuarionaoexiste);
+		//System.out.println("Total de Itens: " + model.getNumItems());
+		//System.out.println("Vizinhos com similaridade com U1: " + Naonan);
+		//System.out.println("Total de Usuários que não existem: " + usuarionaoexiste);
 		
 		int somavizinhos = 0;
 		int semvizinhos = 0;
@@ -188,8 +189,8 @@ public class FCClassic {
     		}
 		}
 		System.out.println("Média da vizinhança: " + somavizinhos/model.getNumUsers());
-		System.out.println("Número de usuários sem vizinhos: " + semvizinhos);
-		System.out.println("Número de usuários com TasteException: " + comException);
+		//System.out.println("Número de usuários sem vizinhos: " + semvizinhos);
+		//System.out.println("Número de usuários com TasteException: " + comException);
 	}
 	
 	

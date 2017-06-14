@@ -33,7 +33,7 @@ import org.apache.mahout.common.RandomUtils;
 public class FCProposal {
 	public static double threshold = 0.9;
 	public static FileDataModel dataModelUserGenre;
-	public static String fileDataModelUserGenre = "data/matrixOfPreferenceV3.csv";
+	public static String fileDataModelUserGenre = "data/matrixOfPreference_genreAndYear_V3.csv";
 	public static long processingTimeGroupingTotal;
 	
 	public static void Webmedia_Evaluation_PearsonCorrelation(String datasetUserItenRating){
@@ -47,7 +47,7 @@ public class FCProposal {
 				public Recommender buildRecommender(DataModel model) throws TasteException {
 					UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModelUserGenre);
 					//UserNeighborhood neighborhood = new ThresholdUserNeighborhood(threshold, similarity, dataModelUserGenre);
-					UserNeighborhood neighborhood = new NearestNUserNeighborhood (100, similarity, dataModelUserGenre);                
+					UserNeighborhood neighborhood = new NearestNUserNeighborhood(100, similarity, dataModelUserGenre);                
 					return new GenericUserBasedRecommender(model, neighborhood, similarity);                
 				}
 			};
@@ -56,9 +56,9 @@ public class FCProposal {
 		    double evaluetion_rmse = evaluator.evaluate(recommenderBuilder, null, model, 0.7, 1.0);
 		    System.out.println("RMSE: " + evaluetion_rmse);
 		    
-		    RecommenderEvaluator evaluator1 = new AverageAbsoluteDifferenceRecommenderEvaluator();
+		    /*RecommenderEvaluator evaluator1 = new AverageAbsoluteDifferenceRecommenderEvaluator();
     		double evaluetion_aade = evaluator1.evaluate(recommenderBuilder, null, model, 0.7, 1.0);
-    		System.out.println("AADE: " + evaluetion_aade);
+    		System.out.println("AADE: " + evaluetion_aade);*/
 			
 			/*RecommenderIRStatsEvaluator statsEvaluator = new GenericRecommenderIRStatsEvaluator();
 	        IRStatistics stats = statsEvaluator.evaluate(recommenderBuilder, null, model, null, 10, 4, 0.7); // evaluate precision recall at 10
@@ -90,12 +90,12 @@ public class FCProposal {
 			//UserNeighborhood neighborhood = new NearestNUserNeighborhood(100, similarity, dataModelUserGenre);
 			long UserNeighborhoodTime = System.nanoTime()-initialTimeneighborhood;
 			long processingTimeGrouping = (System.nanoTime() - initialTimeGrouping);
-			//FCClassic.vizinhanca(model,neighborhood,similarity);
+			FCProposal.vizinhanca(model,neighborhood,similarity);
 			//System.out.println("Similarity Duration: "+ similarityTime/1000+" ms");
 			//System.out.println("Neighborhood Duration: "+ UserNeighborhoodTime/1000+" ms");	    			
-			System.out.println("Grouping Duration: "+ processingTimeGrouping/1000+" ms");
+			//System.out.println("Grouping Duration: "+ processingTimeGrouping/1000+" ms");
 			//Recommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);				
-			System.out.print("\n");
+			//System.out.print("\n");
 		        
 		} catch (IOException e) {
 			System.out.println("There was an IO exception.");
@@ -172,11 +172,11 @@ public class FCProposal {
     			usuarionaoexiste++;
     		}
 		}
-		System.out.println("Total de Usuários: " + model.getNumUsers());
+		//System.out.println("Total de Usuários: " + model.getNumUsers());
 
-		System.out.println("Total de Itens: " + model.getNumItems());
-		System.out.println("Vizinhos com similaridade com U1: " + Naonan);
-		System.out.println("Total de Usuários que não existem: " + usuarionaoexiste);
+		//System.out.println("Total de Itens: " + model.getNumItems());
+		//System.out.println("Vizinhos com similaridade com U1: " + Naonan);
+		//System.out.println("Total de Usuários que não existem: " + usuarionaoexiste);
 
 
 		
@@ -196,8 +196,8 @@ public class FCProposal {
     		}
 		}
 		System.out.println("Média da vizinhança: " + somavizinhos/model.getNumUsers());
-		System.out.println("Número de usuários sem vizinhos: " + semvizinhos);
-		System.out.println("Número de usuários com TasteException: " + comException);
+		//System.out.println("Número de usuários sem vizinhos: " + semvizinhos);
+		//System.out.println("Número de usuários com TasteException: " + comException);
 	}
 	
 	public static void FCPropostaPearsonCorrelation(String datasetUserItenRating, double evaluationPercentage, double trainingPercentage) {
